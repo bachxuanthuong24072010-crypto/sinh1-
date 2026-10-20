@@ -12,6 +12,9 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="application-name" content="BioPlanner">
     
+    <!-- Nhúng PWA Manifest (Data URI) để app chạy độc lập (Standalone) -->
+    <link rel="manifest" href='data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22BioPlanner%202027%22%2C%22short_name%22%3A%22BioPlanner%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23ecfdf5%22%2C%22theme_color%22%3A%22%23059669%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fcdn-icons-png.flaticon.com%2F512%2F295%2F295282.png%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fpng%22%2C%22purpose%22%3A%22any%20maskable%22%7D%5D%7D'>
+    
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -60,20 +63,6 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
-        /* Hiệu ứng lật thẻ Flashcard 3D */
-        .perspective-1000 {
-            perspective: 1000px;
-        }
-        .transform-style-3d {
-            transform-style: preserve-3d;
-            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .backface-hidden {
-            backface-visibility: hidden;
-        }
-        .rotate-y-180 {
-            transform: rotateY(180deg);
-        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased pb-28 md:pb-12">
@@ -97,6 +86,9 @@
                 </div>
             </div>
             <div class="flex items-center gap-1.5">
+                <button onclick="requestNotificationPermission()" id="btn-notify" class="text-xs bg-white/15 hover:bg-white/25 px-2.5 py-1.5 rounded-lg flex items-center gap-1 backdrop-blur transition" title="Bật thông báo nhắc học">
+                    <i class="fa-solid fa-bell-slash" id="icon-notify"></i>
+                </button>
                 <button onclick="openBackupModal()" class="text-xs bg-white/15 hover:bg-white/25 px-2.5 py-1.5 rounded-lg flex items-center gap-1 backdrop-blur transition" title="Sao lưu / Khôi phục dữ liệu">
                     <i class="fa-solid fa-cloud-arrow-down"></i>
                     <span class="hidden sm:inline">Sao lưu</span>
@@ -207,9 +199,6 @@
             <button onclick="switchTab('roadmap')" id="tab-roadmap" class="tab-btn whitespace-nowrap flex-1 py-2 px-3 text-xs font-bold rounded-lg text-slate-500 transition">
                 <i class="fa-solid fa-map-location-dot mr-1"></i> Lộ Trình 11 Tuần
             </button>
-            <button onclick="switchTab('toolkit')" id="tab-toolkit" class="tab-btn whitespace-nowrap flex-1 py-2 px-3 text-xs font-bold rounded-lg text-slate-500 transition">
-                <i class="fa-solid fa-calculator mr-1"></i> Công Cụ & Flashcard
-            </button>
             <button onclick="switchTab('logs')" id="tab-logs" class="tab-btn whitespace-nowrap flex-1 py-2 px-3 text-xs font-bold rounded-lg text-slate-500 transition">
                 <i class="fa-solid fa-pen-to-square mr-1"></i> Nhật Ký & Điểm Thi
             </button>
@@ -252,158 +241,6 @@
 
             <div id="roadmap-accordion-container" class="space-y-3">
                 <!-- Render 11 tuần bằng JS -->
-            </div>
-        </section>
-
-        <!-- ==========================================
-             TAB 3: BỘ CÔNG CỤ TÍNH NHANH & FLASHCARD SINH HỌC
-             ========================================== -->
-        <section id="content-toolkit" class="space-y-5 hidden">
-            
-            <!-- PHẦN A: MÁY TÍNH CÔNG THỨC DI TRUYỀN -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- 1. Máy tính Cấu trúc ADN -->
-                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-3">
-                    <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-                        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-                            <i class="fa-solid fa-dna text-bio-600"></i> Máy Tính Cấu Trúc Gen (ADN)
-                        </h3>
-                        <span class="text-[10px] bg-bio-50 text-bio-700 px-2 py-0.5 rounded font-semibold">1 Nu = 3.4 Å | 300 đvC</span>
-                    </div>
-                    <p class="text-[11px] text-slate-500">Nhập <b>1 thông số kích thước</b> (N hoặc L) và <b>1 thông số loại Nu</b> (Số Nu loại A, %A hoặc số liên kết H):</p>
-                    
-                    <div class="grid grid-cols-2 gap-2 text-xs">
-                        <div>
-                            <label class="font-semibold text-slate-600 block mb-1">Tổng số Nu (N)</label>
-                            <input type="number" id="calc-dna-n" placeholder="VD: 3000" class="w-full p-2 border rounded-xl focus:outline-none focus:border-bio-500">
-                        </div>
-                        <div>
-                            <label class="font-semibold text-slate-600 block mb-1">Chiều dài L (Å)</label>
-                            <input type="number" id="calc-dna-l" placeholder="VD: 5100" class="w-full p-2 border rounded-xl focus:outline-none focus:border-bio-500">
-                        </div>
-                        <div>
-                            <label class="font-semibold text-slate-600 block mb-1">Số Nu loại A (hoặc %A)</label>
-                            <input type="number" id="calc-dna-a" placeholder="VD: 600 hoặc 20" class="w-full p-2 border rounded-xl focus:outline-none focus:border-bio-500">
-                        </div>
-                        <div>
-                            <label class="font-semibold text-slate-600 block mb-1">Hoặc Liên kết H (2A+3G)</label>
-                            <input type="number" id="calc-dna-h" placeholder="VD: 3900" class="w-full p-2 border rounded-xl focus:outline-none focus:border-bio-500">
-                        </div>
-                    </div>
-
-                    <div class="flex gap-2">
-                        <button onclick="calculateDNA()" class="flex-1 py-2 bg-bio-600 hover:bg-bio-700 text-white font-bold text-xs rounded-xl shadow-sm transition">
-                            Tính nhanh thông số Gen
-                        </button>
-                        <button onclick="clearDNACalc()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs rounded-xl transition">
-                            Xóa
-                        </button>
-                    </div>
-
-                    <div id="dna-result-box" class="hidden bg-bio-50/80 border border-bio-200 rounded-xl p-3 text-xs space-y-1.5 text-slate-700">
-                        <!-- Kết quả ADN render tại đây -->
-                    </div>
-                </div>
-
-                <!-- 2. Máy tính Cân bằng Quần thể Hardy-Weinberg -->
-                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-3">
-                    <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-                        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-                            <i class="fa-solid fa-users-rays text-teal-600"></i> Cân Bằng Hardy-Weinberg
-                        </h3>
-                        <span class="text-[10px] bg-teal-50 text-teal-700 px-2 py-0.5 rounded font-semibold">p²AA + 2pqAa + q²aa = 1</span>
-                    </div>
-                    <p class="text-[11px] text-slate-500">Nhập <b>tần số alen lặn q(a)</b> HOẶC <b>tỉ lệ kiểu hình lặn aa (%)</b> trong quần thể cân bằng:</p>
-                    
-                    <div class="grid grid-cols-2 gap-2 text-xs">
-                        <div>
-                            <label class="font-semibold text-slate-600 block mb-1">Tần số alen lặn q(a)</label>
-                            <input type="number" id="calc-hw-q" step="0.01" min="0" max="1" placeholder="VD: 0.3" class="w-full p-2 border rounded-xl focus:outline-none focus:border-teal-500">
-                        </div>
-                        <div>
-                            <label class="font-semibold text-slate-600 block mb-1">Tỉ lệ kiểu hình lặn aa (%)</label>
-                            <input type="number" id="calc-hw-aa" step="0.1" min="0" max="100" placeholder="VD: 16 (tức 16%)" class="w-full p-2 border rounded-xl focus:outline-none focus:border-teal-500">
-                        </div>
-                    </div>
-
-                    <div class="flex gap-2">
-                        <button onclick="calculateHW()" class="flex-1 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-sm transition">
-                            Tính cấu trúc quần thể
-                        </button>
-                        <button onclick="clearHWCalc()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs rounded-xl transition">
-                            Xóa
-                        </button>
-                    </div>
-
-                    <div id="hw-result-box" class="hidden bg-teal-50/80 border border-teal-200 rounded-xl p-3 text-xs space-y-1.5 text-slate-700">
-                        <!-- Kết quả Hardy-Weinberg render tại đây -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- PHẦN B: FLASHCARDS ÔN NHANH CƠ CHẾ SINH HỌC -->
-            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-4">
-                <div class="flex justify-between items-center flex-wrap gap-2">
-                    <div>
-                        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-                            <i class="fa-solid fa-layer-group text-amber-500"></i> Thẻ Ghi Nhớ Nhanh (Bio Flashcards)
-                        </h3>
-                        <p class="text-[11px] text-slate-500">Bấm vào thẻ để lật xem từ khóa & cơ chế chuẩn chấm thi tự luận</p>
-                    </div>
-                    <button onclick="openFlashcardModal()" class="text-xs bg-bio-50 hover:bg-bio-100 text-bio-700 font-bold px-3 py-1.5 rounded-xl border border-bio-200 transition flex items-center gap-1">
-                        <i class="fa-solid fa-plus"></i> Thêm thẻ mới
-                    </button>
-                </div>
-
-                <!-- Khu vực Lật Thẻ 3D -->
-                <div class="max-w-lg mx-auto">
-                    <div onclick="flipCurrentCard()" class="perspective-1000 cursor-pointer select-none h-52 w-full">
-                        <div id="flashcard-inner" class="transform-style-3d relative w-full h-full rounded-2xl shadow-md">
-                            <!-- Mặt trước (Câu hỏi / Khái niệm) -->
-                            <div class="backface-hidden absolute inset-0 bg-gradient-to-br from-bio-600 to-teal-700 text-white rounded-2xl p-5 flex flex-col justify-between">
-                                <div class="flex justify-between items-center">
-                                    <span id="fc-category" class="text-[10px] font-bold bg-white/20 px-2.5 py-0.5 rounded-full backdrop-blur">Chuyên đề</span>
-                                    <span id="fc-counter" class="text-[11px] font-semibold text-bio-100">1 / 6</span>
-                                </div>
-                                <div class="my-auto text-center px-2">
-                                    <p id="fc-front" class="font-bold text-sm sm:text-base leading-relaxed">Đang tải câu hỏi...</p>
-                                </div>
-                                <div class="text-center text-[10px] text-bio-200 flex items-center justify-center gap-1">
-                                    <i class="fa-solid fa-rotate"></i> Chạm vào thẻ để xem đáp án chuẩn
-                                </div>
-                            </div>
-
-                            <!-- Mặt sau (Đáp án / Từ khóa ăn điểm) -->
-                            <div class="backface-hidden rotate-y-180 absolute inset-0 bg-amber-50 border-2 border-amber-300 text-slate-800 rounded-2xl p-5 flex flex-col justify-between overflow-y-auto">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-[10px] font-extrabold bg-amber-200 text-amber-900 px-2.5 py-0.5 rounded-full">ĐÁP ÁN & TỪ KHÓA</span>
-                                    <button onclick="deleteCurrentFlashcard(event)" class="text-slate-400 hover:text-rose-500 text-xs" title="Xóa thẻ này">
-                                        <i class="fa-regular fa-trash-can"></i>
-                                    </button>
-                                </div>
-                                <div class="my-auto text-left px-1">
-                                    <p id="fc-back" class="text-xs sm:text-sm font-medium text-slate-700 leading-relaxed whitespace-pre-line">Đang tải đáp án...</p>
-                                </div>
-                                <div class="text-center text-[10px] text-amber-700 font-semibold">
-                                    <i class="fa-solid fa-rotate"></i> Chạm để lật lại câu hỏi
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Điều hướng Flashcard -->
-                    <div class="flex justify-between items-center mt-3 px-2">
-                        <button onclick="prevFlashcard()" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition flex items-center gap-1.5">
-                            <i class="fa-solid fa-arrow-left"></i> Thẻ trước
-                        </button>
-                        <button onclick="flipCurrentCard()" class="px-4 py-2 rounded-xl bg-bio-50 text-bio-700 text-xs font-bold border border-bio-200">
-                            Lật thẻ
-                        </button>
-                        <button onclick="nextFlashcard()" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition flex items-center gap-1.5">
-                            Thẻ tiếp <i class="fa-solid fa-arrow-right"></i>
-                        </button>
-                    </div>
-                </div>
             </div>
         </section>
 
@@ -655,42 +492,6 @@
                 </button>
                 <button onclick="saveGoalModal()" class="flex-1 py-2.5 bg-bio-600 text-white font-bold text-xs rounded-xl hover:bg-bio-700 shadow-md transition">
                     Lưu mục tiêu
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 3. Modal Thêm Flashcard Sinh Học Mới -->
-    <div id="flashcard-modal" class="fixed inset-0 bg-black/60 z-50 flex items-end md:items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl">
-            <div class="flex justify-between items-center border-b pb-2">
-                <h3 class="font-bold text-sm text-slate-800 flex items-center gap-2">
-                    <i class="fa-solid fa-layer-group text-bio-600"></i> Tạo Thẻ Flashcard Sinh Học
-                </h3>
-                <button onclick="closeFlashcardModal()" class="text-slate-400 hover:text-slate-600 text-lg">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            <div class="space-y-3 text-xs">
-                <div>
-                    <label class="font-semibold text-slate-600 block mb-1">Phân môn</label>
-                    <input type="text" id="fc-input-cat" placeholder="VD: Sinh lý Thực vật / Di truyền phân tử" class="w-full p-2.5 border rounded-xl focus:outline-none focus:border-bio-500">
-                </div>
-                <div>
-                    <label class="font-semibold text-slate-600 block mb-1">Mặt trước (Câu hỏi / Cơ chế) *</label>
-                    <textarea id="fc-input-front" rows="2" placeholder="VD: Phân biệt chất nhận CO2 đầu tiên ở thực vật C3 và C4?" class="w-full p-2.5 border rounded-xl focus:outline-none focus:border-bio-500"></textarea>
-                </div>
-                <div>
-                    <label class="font-semibold text-slate-600 block mb-1">Mặt sau (Đáp án & Từ khóa chấm điểm) *</label>
-                    <textarea id="fc-input-back" rows="3" placeholder="VD: - Thực vật C3: Hợp chất 5C (Ribulose-1,5-bisphosphate / RuBP)&#10;- Thực vật C4 & CAM: Hợp chất 3C (PEP - Phosphoenolpyruvate)" class="w-full p-2.5 border rounded-xl focus:outline-none focus:border-bio-500"></textarea>
-                </div>
-            </div>
-            <div class="flex gap-2 pt-1">
-                <button onclick="closeFlashcardModal()" class="flex-1 py-2.5 border border-slate-200 text-slate-600 font-semibold text-xs rounded-xl hover:bg-slate-50 transition">
-                    Hủy
-                </button>
-                <button onclick="saveNewFlashcard()" class="flex-1 py-2.5 bg-bio-600 text-white font-bold text-xs rounded-xl hover:bg-bio-700 shadow-md transition">
-                    Thêm Flashcard
                 </button>
             </div>
         </div>
@@ -1034,40 +835,6 @@
             }
         ];
 
-        // 3. FLASHCARDS MẪU CHUYÊN SINH
-        const DEFAULT_FLASHCARDS = [
-            {
-                category: "Quang hợp Thực vật",
-                front: "So sánh chất nhận CO₂ đầu tiên và sản phẩm cố định CO₂ đầu tiên ở thực vật C3, C4 và CAM?",
-                back: "• Thực vật C3: Chất nhận là RuBP (5C) → Sản phẩm đầu tiên là APG / 3-PGA (3C).\n• Thực vật C4 & CAM: Chất nhận là PEP (3C) dưới xúc tác của PEP-carboxylase → Sản phẩm đầu tiên là AOA (4C), sau đó chuyển thành AM (4C)."
-            },
-            {
-                category: "Di truyền Phân tử",
-                front: "Vai trò của các enzyme chính trong quá trình Tái bản ADN ở E.coli?",
-                back: "1. Helicase: Cắt liên kết Hydrogen tháo xoắn.\n2. Topoisomerase (Gyrase): Giảm sức căng siêu xoắn phía trước chạc chữ Y.\n3. Primase: Tổng hợp đoạn mồi ARN (tạo đầu 3'-OH tự do).\n4. ADN Polymerase III: Tổng hợp mạch mới theo chiều 5'→3'.\n5. ADN Polymerase I: Loại bỏ mồi ARN và thay bằng ADN.\n6. Ligase: Nối các đoạn Okazaki (liên kết phosphodiester)."
-            },
-            {
-                category: "Quy luật Di truyền",
-                front: "Mối liên hệ giữa tỷ lệ tế bào xảy ra trao đổi chéo (a%) và tần số hoán vị gen (f%)?",
-                back: "• Trong 1 tế bào sinh giao tử (2n) giảm phân có trao đổi chéo tại 1 điểm: Tạo ra 2 giao tử liên kết và 2 giao tử hoán vị (tỉ lệ 50% HV).\n• Do đó: Tần số HVG (f%) = 1/2 × Tỉ lệ tế bào xảy ra hoán vị (a%).\n• Hệ quả: Dù 100% tế bào xảy ra trao đổi chéo đơn thì f tối đa cũng chỉ bằng 50%."
-            },
-            {
-                category: "Điều hòa Hoạt động Gen",
-                front: "Khi môi trường KHÔNG có Lactose và CÓ Glucose, Operon Lac ở E.coli hoạt động như thế nào?",
-                back: "• Gen điều hòa (lacI) luôn tổng hợp protein ức chế.\n• Không có Allolactose → Protein ức chế giữ nguyên cấu hình không gian và bám vào vùng vận hành (Operator - O).\n• ARN Polymerase không trượt qua được → Các gen cấu trúc Z, Y, A KHÔNG được phiên mã."
-            },
-            {
-                category: "Sinh lý Động vật",
-                front: "Tại sao tim tách rời khỏi cơ thể và đặt trong dung dịch sinh lý có đủ O₂ vẫn có khả năng đập nhịp nhàng?",
-                back: "• Nhờ Hệ dẫn truyền tim có khả năng tự phát xung điện (Tính tự động của tim).\n• Nút xoang nhĩ tự phát xung điện → truyền tới cơ tâm nhĩ (nhĩ co) → nút nhĩ thất → bó His → mạng lưới Purkinje → cơ tâm thất (thất co)."
-            },
-            {
-                category: "Sinh lý Thực vật",
-                front: "Cơ chế mở khí khổng chủ động ngoài ánh sáng diễn ra như thế nào?",
-                back: "1. Ánh sáng kích hoạt bơm proton H⁺-ATPase trên màng tế bào hạt đậu bơm H⁺ ra ngoài.\n2. Điện thế màng phân cực kéo K⁺, Cl⁻ đi vào tế bào khí khổng.\n3. Đồng thời lục lạp quang hợp tạo đường tích lũy.\n4. Áp suất thẩm thấu tăng → Nước thẩm thấu vào tế bào hạt đậu → Tế bào trương nước và mở khí khổng."
-            }
-        ];
-
         const DEFAULT_GOAL = {
             examName: "Kỳ thi HSG Sinh Học Cấp Tỉnh",
             examDate: "2027-01-15",
@@ -1082,13 +849,10 @@
             timetable: null,
             checkedTimetable: {}, // { "d1_t0": true }
             checkedRoadmap: {},   // { "w1_t0": true }
-            flashcards: [],
             studyLogs: [],
             examLogs: [],
             errorLogs: []
         };
-
-        let currentFcIndex = 0;
 
         // KHỞI ĐỘNG ỨNG DỤNG
         window.addEventListener('DOMContentLoaded', () => {
@@ -1098,7 +862,6 @@
             displayCurrentDateInfo();
             renderTimetable();
             renderRoadmap();
-            renderFlashcard();
             renderLogsHistory();
             renderErrors();
             updateDashboardMetrics();
@@ -1132,9 +895,6 @@
             }
             if (!appState.checkedTimetable) appState.checkedTimetable = {};
             if (!appState.checkedRoadmap) appState.checkedRoadmap = {};
-            if (!appState.flashcards || !Array.isArray(appState.flashcards) || appState.flashcards.length === 0) {
-                appState.flashcards = JSON.parse(JSON.stringify(DEFAULT_FLASHCARDS));
-            }
             if (!appState.studyLogs) appState.studyLogs = [];
             if (!appState.examLogs) appState.examLogs = [];
             if (!appState.errorLogs) appState.errorLogs = [];
@@ -1255,7 +1015,7 @@
 
         // CHUYỂN TAB
         function switchTab(tabName) {
-            ['timetable', 'roadmap', 'toolkit', 'logs', 'errors'].forEach(t => {
+            ['timetable', 'roadmap', 'logs', 'errors'].forEach(t => {
                 document.getElementById(`content-${t}`).classList.add('hidden');
                 document.getElementById(`tab-${t}`).className = "tab-btn whitespace-nowrap flex-1 py-2 px-3 text-xs font-bold rounded-lg text-slate-500 transition";
             });
@@ -1360,6 +1120,90 @@
             const todayPercent = todayTotal > 0 ? Math.round((todayCompleted / todayTotal) * 100) : 0;
             document.getElementById('today-progress-bar').style.width = `${todayPercent}%`;
             document.getElementById('today-progress-text').innerText = `${todayCompleted}/${todayTotal} (${todayPercent}%)`;
+        }
+
+        // HỆ THỐNG THÔNG BÁO (WEB NOTIFICATIONS)
+        let notifiedTasks = {}; // Tránh thông báo trùng lặp nhiều lần
+
+        function requestNotificationPermission() {
+            if (!("Notification" in window)) {
+                showToast("Trình duyệt của bạn không hỗ trợ thông báo!");
+                return;
+            }
+            Notification.requestPermission().then(permission => {
+                updateNotificationIcon(permission);
+                if (permission === "granted") {
+                    showToast("Đã bật thông báo nhắc nhở học tập!");
+                    sendSystemNotification("BioPlanner", "Thông báo đã được bật thành công! 🌿");
+                } else {
+                    showToast("Bạn đã từ chối quyền gửi thông báo.");
+                }
+            });
+        }
+
+        function updateNotificationIcon(permission) {
+            const icon = document.getElementById('icon-notify');
+            if (!icon) return;
+            if (permission === "granted") {
+                icon.className = "fa-solid fa-bell text-amber-300 animate-bounce";
+                setTimeout(() => { icon.className = "fa-solid fa-bell text-amber-300"; }, 1500);
+            } else {
+                icon.className = "fa-solid fa-bell-slash text-slate-300";
+            }
+        }
+
+        function sendSystemNotification(title, body) {
+            if ("Notification" in window && Notification.permission === "granted") {
+                new Notification(title, { 
+                    body: body, 
+                    icon: "https://cdn-icons-png.flaticon.com/512/295/295282.png" 
+                });
+            }
+        }
+
+        // Trình kiểm tra lịch học chạy ngầm mỗi phút (60000ms)
+        setInterval(checkUpcomingTasks, 60000);
+
+        function checkUpcomingTasks() {
+            if (!("Notification" in window) || Notification.permission !== "granted") return;
+            
+            const now = new Date();
+            const currentHours = String(now.getHours()).padStart(2, '0');
+            const currentMinutes = String(now.getMinutes()).padStart(2, '0');
+            const currentTimeStr = `${currentHours}:${currentMinutes}`;
+            const todayDayId = now.getDay();
+            const dateKey = getLocalDateStr(now);
+
+            const todayData = appState.timetable.find(d => d.dayId === todayDayId);
+            if (!todayData) return;
+
+            todayData.tasks.forEach((taskStr, idx) => {
+                const taskId = `d${todayDayId}_t${idx}`;
+                
+                // Lọc tìm thời gian trong task, ví dụ: "07:30 - ..." hoặc "07h30"
+                const timeMatch = taskStr.match(/(?:\]\s*|^)(\d{1,2})[:h](\d{2})/i);
+                
+                if (timeMatch) {
+                    const taskH = String(parseInt(timeMatch[1])).padStart(2, '0');
+                    const taskM = timeMatch[2];
+                    const taskTime = `${taskH}:${taskM}`;
+
+                    if (taskTime === currentTimeStr) {
+                        const notifyKey = `${dateKey}_${taskId}`;
+                        if (!notifiedTasks[notifyKey] && !appState.checkedTimetable[taskId]) {
+                            
+                            // Lọc lấy đoạn mô tả nhiệm vụ để báo
+                            let content = taskStr;
+                            const contentMatch = taskStr.match(/\]\s*\d{1,2}[:h]\d{2}.*?:\s*(.*)/);
+                            if (contentMatch) content = contentMatch[1];
+                            else content = taskStr.replace(/\[.*?\]\s*/, '');
+
+                            sendSystemNotification("Đến giờ học Sinh rồi bbi 🧬", `Nhiệm vụ: ${content}`);
+                            notifiedTasks[notifyKey] = true;
+                        }
+                    }
+                }
+            });
         }
 
         function toggleDay(dayId) {
@@ -1711,194 +1555,6 @@
             showToast("Đã xóa nhiệm vụ!");
         }
 
-        // 9. BỘ CÔNG CỤ TÍNH NHANH SINH HỌC (ADN & HARDY-WEINBERG)
-        function calculateDNA() {
-            let N = parseFloat(document.getElementById('calc-dna-n').value);
-            let L = parseFloat(document.getElementById('calc-dna-l').value);
-            let inputA = parseFloat(document.getElementById('calc-dna-a').value);
-            let inputH = parseFloat(document.getElementById('calc-dna-h').value);
-
-            if (isNaN(N) && !isNaN(L) && L > 0) {
-                N = Math.round((L * 2) / 3.4);
-            } else if (!isNaN(N) && N > 0) {
-                L = (N / 2) * 3.4;
-            } else {
-                showToast("Vui lòng nhập Tổng số Nu (N) hoặc Chiều dài L (Å)!");
-                return;
-            }
-
-            let A = 0, G = 0, H = 0;
-            if (!isNaN(inputA) && inputA > 0) {
-                if (inputA < 50) {
-                    // Người dùng nhập %A
-                    A = Math.round((inputA / 100) * N);
-                } else {
-                    A = Math.round(inputA);
-                }
-                G = (N / 2) - A;
-                H = 2 * A + 3 * G;
-            } else if (!isNaN(inputH) && inputH > 0) {
-                // Giải hệ: 2A + 2G = N và 2A + 3G = H => G = H - N
-                H = Math.round(inputH);
-                G = H - N;
-                A = (N / 2) - G;
-            } else {
-                // Nếu chỉ nhập N hoặc L thì tính các thông số kích thước
-                A = -1;
-            }
-
-            const C = N / 20;
-            const M = N * 300;
-            const HT = N - 2; // Liên kết phosphodiester giữa các Nu trên 2 mạch
-
-            const box = document.getElementById('dna-result-box');
-            box.classList.remove('hidden');
-
-            let nuDetailHtml = '';
-            if (A >= 0 && G >= 0) {
-                const pA = ((A / N) * 100).toFixed(1);
-                const pG = ((G / N) * 100).toFixed(1);
-                nuDetailHtml = `
-                    <div class="pt-1.5 mt-1.5 border-t border-bio-200 grid grid-cols-2 gap-1 font-semibold text-bio-900">
-                        <div>• A = T = <b>${A}</b> Nu (${pA}%)</div>
-                        <div>• G = X = <b>${G}</b> Nu (${pG}%)</div>
-                        <div class="col-span-2">• Liên kết Hydrogen (H = 2A + 3G): <b>${H}</b> liên kết</div>
-                    </div>
-                `;
-            } else if (A < -0.5 && !isNaN(inputH)) {
-                nuDetailHtml = `<div class="text-rose-600 font-semibold mt-1">⚠️ Số liên kết H không khớp với tổng N (cần N ≤ H ≤ 1.5N).</div>`;
-            }
-
-            box.innerHTML = `
-                <div class="grid grid-cols-2 gap-1">
-                    <div>• Tổng số Nu (N): <b>${N}</b></div>
-                    <div>• Chiều dài (L): <b>${L.toFixed(1)} Å</b></div>
-                    <div>• Chu kỳ xoắn (C): <b>${C.toFixed(1)}</b></div>
-                    <div>• Khối lượng (M): <b>${M.toLocaleString('vi-VN')} đvC</b></div>
-                    <div class="col-span-2">• Liên kết hóa trị nối giữa các Nu (N - 2): <b>${HT}</b></div>
-                </div>
-                ${nuDetailHtml}
-            `;
-        }
-
-        function clearDNACalc() {
-            ['calc-dna-n', 'calc-dna-l', 'calc-dna-a', 'calc-dna-h'].forEach(id => document.getElementById(id).value = '');
-            document.getElementById('dna-result-box').classList.add('hidden');
-        }
-
-        function calculateHW() {
-            let qInput = parseFloat(document.getElementById('calc-hw-q').value);
-            let aaInput = parseFloat(document.getElementById('calc-hw-aa').value);
-
-            let q = 0;
-            if (!isNaN(qInput) && qInput >= 0 && qInput <= 1) {
-                q = qInput;
-            } else if (!isNaN(aaInput) && aaInput >= 0 && aaInput <= 100) {
-                q = Math.sqrt(aaInput / 100);
-            } else {
-                showToast("Hãy nhập tần số q (0 đến 1) hoặc % kiểu hình lặn aa (0 đến 100)!");
-                return;
-            }
-
-            const p = 1 - q;
-            const AA = (p * p * 100).toFixed(2);
-            const Aa = (2 * p * q * 100).toFixed(2);
-            const aa = (q * q * 100).toFixed(2);
-            const carrierInDom = (p * p + 2 * p * q) > 0 ? ((2 * p * q) / (p * p + 2 * p * q) * 100).toFixed(2) : 0;
-
-            const box = document.getElementById('hw-result-box');
-            box.classList.remove('hidden');
-            box.innerHTML = `
-                <div class="font-semibold text-teal-900">• Tần số alen: <b>p(A) = ${p.toFixed(3)}</b> | <b>q(a) = ${q.toFixed(3)}</b></div>
-                <div>• Cấu trúc cân bằng: <b>${AA}% AA : ${Aa}% Aa : ${aa}% aa</b></div>
-                <div class="text-[11px] text-teal-800 pt-1 border-t border-teal-200">
-                    💡 <i>Mẹo giải phả hệ:</i> Xác suất một cá thể có kiểu hình trội mang gen dị hợp (Aa) trong quần thể này là <b>2pq / (p² + 2pq) = ${carrierInDom}%</b>.
-                </div>
-            `;
-        }
-
-        function clearHWCalc() {
-            document.getElementById('calc-hw-q').value = '';
-            document.getElementById('calc-hw-aa').value = '';
-            document.getElementById('hw-result-box').classList.add('hidden');
-        }
-
-        // 10. HỆ THỐNG FLASHCARD LẬT THẺ
-        function renderFlashcard() {
-            if (appState.flashcards.length === 0) {
-                document.getElementById('fc-category').innerText = "Trống";
-                document.getElementById('fc-counter').innerText = "0 / 0";
-                document.getElementById('fc-front').innerText = "Chưa có thẻ Flashcard nào. Hãy bấm nút Thêm thẻ mới!";
-                document.getElementById('fc-back').innerText = "";
-                return;
-            }
-
-            if (currentFcIndex >= appState.flashcards.length) currentFcIndex = 0;
-            if (currentFcIndex < 0) currentFcIndex = appState.flashcards.length - 1;
-
-            const card = appState.flashcards[currentFcIndex];
-            document.getElementById('flashcard-inner').classList.remove('rotate-y-180');
-            document.getElementById('fc-category').innerText = card.category || "Chuyên Sinh";
-            document.getElementById('fc-counter').innerText = `${currentFcIndex + 1} / ${appState.flashcards.length}`;
-            document.getElementById('fc-front').innerText = card.front;
-            document.getElementById('fc-back').innerText = card.back;
-        }
-
-        function flipCurrentCard() {
-            document.getElementById('flashcard-inner').classList.toggle('rotate-y-180');
-        }
-
-        function nextFlashcard() {
-            currentFcIndex++;
-            renderFlashcard();
-        }
-
-        function prevFlashcard() {
-            currentFcIndex--;
-            renderFlashcard();
-        }
-
-        function openFlashcardModal() {
-            document.getElementById('fc-input-cat').value = '';
-            document.getElementById('fc-input-front').value = '';
-            document.getElementById('fc-input-back').value = '';
-            document.getElementById('flashcard-modal').classList.remove('hidden');
-        }
-
-        function closeFlashcardModal() {
-            document.getElementById('flashcard-modal').classList.add('hidden');
-        }
-
-        function saveNewFlashcard() {
-            const cat = document.getElementById('fc-input-cat').value.trim() || "Chuyên Sinh";
-            const front = document.getElementById('fc-input-front').value.trim();
-            const back = document.getElementById('fc-input-back').value.trim();
-
-            if (!front || !back) {
-                showToast("Vui lòng nhập đầy đủ câu hỏi mặt trước và đáp án mặt sau!");
-                return;
-            }
-
-            appState.flashcards.push({ category: cat, front, back });
-            currentFcIndex = appState.flashcards.length - 1;
-            saveState();
-            renderFlashcard();
-            closeFlashcardModal();
-            showToast("Đã thêm thẻ Flashcard Sinh học mới!");
-        }
-
-        function deleteCurrentFlashcard(e) {
-            e.stopPropagation();
-            if (appState.flashcards.length <= 1) {
-                showToast("Cần giữ lại ít nhất 1 thẻ Flashcard!");
-                return;
-            }
-            appState.flashcards.splice(currentFcIndex, 1);
-            saveState();
-            renderFlashcard();
-            showToast("Đã xóa thẻ Flashcard!");
-        }
-
         // 11. NHẬT KÝ GIỜ HỌC & ĐIỂM THI THỬ (/20)
         function addStudyLog() {
             const date = document.getElementById('study-date').value;
@@ -2212,7 +1868,9 @@
                 } else {
                     pausePomo();
                     playBeepSound();
-                    showToast(currentPomoMode === 'break' ? "Hết giờ nghỉ! Tiếp tục chinh phục Sinh học nào!" : "🎉 Hoàn thành phiên tập trung! Hãy nghỉ mắt 5 phút nhé.");
+                    const msg = currentPomoMode === 'break' ? "Hết giờ nghỉ! Tiếp tục chinh phục Sinh học nào!" : "🎉 Hoàn thành phiên tập trung! Hãy nghỉ mắt 5 phút nhé.";
+                    showToast(msg);
+                    sendSystemNotification("Đồng hồ BioPlanner", msg);
                 }
             }, 1000);
         }
@@ -2268,24 +1926,47 @@
                     if (imported && imported.timetable) {
                         appState = imported;
                         saveState();
+                        
                         renderStreak();
                         renderGoal();
                         renderTimetable();
                         renderRoadmap();
-                        renderFlashcard();
                         renderLogsHistory();
                         renderErrors();
+                        updateDashboardMetrics();
                         closeBackupModal();
                         showToast("Khôi phục dữ liệu thành công!");
                     } else {
                         showToast("File không đúng định dạng BioPlanner!");
                     }
-                } catch (err) {
-                    showToast("Lỗi đọc file sao lưu!");
+                } catch (error) {
+                    showToast("Lỗi khi đọc file sao lưu!");
                 }
             };
             reader.readAsText(file);
         }
+
+        // KHỞI ĐỘNG ỨNG DỤNG
+        window.addEventListener('DOMContentLoaded', () => {
+            loadState();
+            renderStreak();
+            renderGoal();
+            displayCurrentDateInfo();
+            renderTimetable();
+            renderRoadmap();
+            renderLogsHistory();
+            renderErrors();
+            updateDashboardMetrics();
+
+            if ("Notification" in window) {
+                updateNotificationIcon(Notification.permission);
+            }
+            checkUpcomingTasks();
+
+            const today = getLocalDateStr(new Date());
+            const dateInput = document.getElementById('study-date');
+            if (dateInput) dateInput.value = today;
+        });
 
         // UI HELPERS
         function showToast(msg) {
@@ -2297,12 +1978,59 @@
             }, 2800);
         }
 
+        // PWA - NATIVE INSTALL PROMPT LOGIC
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Ngăn chặn Chrome tự động hiển thị prompt
+            e.preventDefault();
+            // Lưu lại event để kích hoạt sau bằng nút "Cài App"
+            deferredPrompt = e;
+        });
+
         function openInstallGuide() {
-            document.getElementById('install-modal').classList.remove('hidden');
+            if (deferredPrompt) {
+                // Hiển thị prompt cài đặt native của hệ điều hành/trình duyệt
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        showToast('Cài đặt BioPlanner thành công!');
+                    }
+                    deferredPrompt = null;
+                });
+            } else {
+                // Nếu trình duyệt (như iOS Safari) không hỗ trợ prompt native, hiện modal hướng dẫn thủ công
+                document.getElementById('install-modal').classList.remove('hidden');
+            }
         }
 
         function closeInstallGuide() {
             document.getElementById('install-modal').classList.add('hidden');
+        }
+
+        // PWA - SERVICE WORKER (Tạo dạng Blob để thỏa mãn điều kiện chạy trên 1 file HTML duy nhất)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                const swCode = `
+                    self.addEventListener('install', (e) => {
+                        self.skipWaiting();
+                    });
+                    self.addEventListener('activate', (e) => {
+                        e.waitUntil(clients.claim());
+                    });
+                    self.addEventListener('fetch', (e) => {
+                        // Trả về trực tiếp request (Chỉ cần có listener fetch để đạt chuẩn PWA)
+                        e.respondWith(fetch(e.request).catch(() => new Response('BioPlanner đang ở chế độ Offline.')));
+                    });
+                `;
+                const swBlob = new Blob([swCode], { type: 'application/javascript' });
+                const swUrl = URL.createObjectURL(swBlob);
+                
+                navigator.serviceWorker.register(swUrl).then((reg) => {
+                    console.log('PWA Service Worker đã hoạt động!');
+                }).catch((err) => {
+                    console.log('PWA Service Worker lỗi: ', err);
+                });
+            });
         }
     </script>
 </body>
