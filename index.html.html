@@ -1,0 +1,2309 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BioPlanner 2027 - Thời Gian Biểu & Sổ Tay Chuyên Sinh</title>
+    
+    <!-- PWA & Mobile Optimization -->
+    <meta name="theme-color" content="#059669">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="BioPlanner">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bio: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            200: '#a7f3d0',
+                            300: '#6ee7b7',
+                            400: '#34d399',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065f46',
+                            900: '#064e3b',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* Hiệu ứng lật thẻ Flashcard 3D */
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .transform-style-3d {
+            transform-style: preserve-3d;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased pb-28 md:pb-12">
+
+    <!-- Top Navigation Header -->
+    <header class="sticky top-0 z-30 bg-bio-700 text-white shadow-md">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center text-white text-xl font-bold shadow-inner">
+                    <i class="fa-solid fa-dna"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="font-extrabold text-base sm:text-lg leading-tight">BioPlanner 2027</h1>
+                        <!-- Chuỗi kỷ luật (Streak Badge) -->
+                        <span id="streak-badge" class="bg-white/20 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full backdrop-blur flex items-center gap-1 transition" title="Chuỗi ngày học Sinh liên tiếp">
+                            <i class="fa-solid fa-fire text-amber-300"></i> <span id="streak-count">0</span> ngày
+                        </span>
+                    </div>
+                    <p class="text-[11px] text-bio-100 font-medium">Thời Gian Biểu & Sổ Tay Chuyên Sinh 🌿</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-1.5">
+                <button onclick="openBackupModal()" class="text-xs bg-white/15 hover:bg-white/25 px-2.5 py-1.5 rounded-lg flex items-center gap-1 backdrop-blur transition" title="Sao lưu / Khôi phục dữ liệu">
+                    <i class="fa-solid fa-cloud-arrow-down"></i>
+                    <span class="hidden sm:inline">Sao lưu</span>
+                </button>
+                <button onclick="openGoalModal()" class="text-xs bg-white/15 hover:bg-white/25 px-2.5 py-1.5 rounded-lg flex items-center gap-1 backdrop-blur transition" title="Đổi mục tiêu kỳ thi">
+                    <i class="fa-solid fa-bullseye"></i>
+                    <span class="hidden sm:inline">Mục tiêu</span>
+                </button>
+                <button onclick="openInstallGuide()" class="text-xs bg-white/20 hover:bg-white/30 px-2.5 py-1.5 rounded-lg flex items-center gap-1 backdrop-blur transition">
+                    <i class="fa-solid fa-mobile-screen-button"></i>
+                    <span class="hidden md:inline">Cài App</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-4xl mx-auto px-4 pt-4 space-y-5">
+
+        <!-- Banner Dashboard & Đếm ngược Kỳ thi HSG Sinh -->
+        <div class="bg-gradient-to-r from-bio-700 via-bio-600 to-teal-700 rounded-2xl p-4 text-white shadow-lg relative overflow-hidden">
+            <div class="absolute -right-4 -bottom-6 opacity-10 text-9xl font-black pointer-events-none">
+                <i class="fa-solid fa-microscope"></i>
+            </div>
+            <div class="relative z-10">
+                <div class="flex justify-between items-start mb-2 gap-2 flex-wrap">
+                    <span id="current-day-badge" class="bg-white/20 text-xs px-2.5 py-1 rounded-full font-semibold backdrop-blur">
+                        <i class="fa-regular fa-calendar-days mr-1"></i> Đang tải ngày...
+                    </span>
+                    <div class="flex items-center gap-1.5">
+                        <button onclick="openGoalModal()" id="countdown-badge" class="bg-amber-400 hover:bg-amber-300 text-amber-950 font-extrabold text-xs px-2.5 py-1 rounded-full shadow transition flex items-center gap-1 cursor-pointer">
+                            Đang tính...
+                        </button>
+                        <button onclick="openGoalModal()" class="bg-white/20 hover:bg-white/30 text-white text-xs px-2 py-1 rounded-full backdrop-blur transition flex items-center gap-1 font-medium">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                    </div>
+                </div>
+                <h2 id="banner-exam-title" class="text-lg sm:text-xl font-extrabold mb-1">Chinh Phục HSG Sinh Học Cấp Tỉnh 🧬</h2>
+                <p id="banner-motto" class="text-xs text-bio-100 leading-relaxed mb-3">
+                    Nắm chắc cơ chế sinh lý - Giải nhanh toán di truyền - Trình bày tự luận chuẩn từ khóa!
+                </p>
+                
+                <!-- Dual Progress Bars: Hôm nay & Lộ trình 11 tuần -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 bg-black/20 rounded-xl p-3 backdrop-blur">
+                    <div>
+                        <div class="flex justify-between text-[11px] font-semibold mb-1">
+                            <span><i class="fa-solid fa-bolt text-amber-300 mr-1"></i>Tiến độ lịch học hôm nay</span>
+                            <span id="today-progress-text">0%</span>
+                        </div>
+                        <div class="w-full bg-white/25 rounded-full h-2 overflow-hidden">
+                            <div id="today-progress-bar" class="bg-amber-300 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-[11px] font-semibold mb-1">
+                            <span><i class="fa-solid fa-map text-bio-200 mr-1"></i>Tổng lộ trình 11 tuần</span>
+                            <span id="roadmap-progress-text">0%</span>
+                        </div>
+                        <div class="w-full bg-white/25 rounded-full h-2 overflow-hidden">
+                            <div id="roadmap-progress-bar" class="bg-bio-300 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4 Metric Dashboard Cards Chuyên Sinh -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center text-center">
+                <div class="w-8 h-8 rounded-full bg-bio-100 text-bio-600 flex items-center justify-center mb-1 text-sm">
+                    <i class="fa-regular fa-clock"></i>
+                </div>
+                <span class="text-[11px] text-slate-500 font-medium">Tổng giờ cày Sinh</span>
+                <span id="stat-total-hours" class="text-sm sm:text-base font-extrabold text-slate-800">0.0 h</span>
+            </div>
+            
+            <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center text-center">
+                <div class="w-8 h-8 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center mb-1 text-sm">
+                    <i class="fa-solid fa-list-check"></i>
+                </div>
+                <span class="text-[11px] text-slate-500 font-medium">Mục tiêu đã xong</span>
+                <span id="stat-completed-tasks" class="text-sm sm:text-base font-extrabold text-slate-800">0 mục</span>
+            </div>
+
+            <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center text-center">
+                <div class="w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mb-1 text-sm">
+                    <i class="fa-solid fa-trophy"></i>
+                </div>
+                <span class="text-[11px] text-slate-500 font-medium">ĐTB Đề Thi Thử</span>
+                <span id="stat-avg-score" class="text-sm sm:text-base font-extrabold text-slate-800">-/20</span>
+            </div>
+
+            <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center text-center">
+                <div class="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mb-1 text-sm">
+                    <i class="fa-solid fa-bug"></i>
+                </div>
+                <span class="text-[11px] text-slate-500 font-medium">Sổ lỗi sai & Trễ</span>
+                <span id="stat-error-count" class="text-sm sm:text-base font-extrabold text-slate-800">0 mục</span>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs (Scrollable on small screens) -->
+        <div class="flex overflow-x-auto hide-scrollbar gap-1 border-b border-slate-200 bg-white rounded-xl p-1 shadow-sm sticky top-16 z-20">
+            <button onclick="switchTab('timetable')" id="tab-timetable" class="tab-btn whitespace-nowrap flex-1 py-2 px-3 text-xs font-bold rounded-lg text-bio-700 bg-bio-50 transition shadow-sm">
+                <i class="fa-solid fa-calendar-week mr-1"></i> Lịch Tuần (7 Ngày)
+            </button>
+            <button onclick="switchTab('roadmap')" id="tab-roadmap" class="tab-btn whitespace-nowrap flex-1 py-2 px-3 text-xs font-bold rounded-lg text-slate-500 transition">
+                <i class="fa-solid fa-map-location-dot mr-1"></i> Lộ Trình 11 Tuần
+            </button>
+            <button onclick="switchTab('toolkit')" id="tab-toolkit" class="tab-btn whitespace-nowrap flex-1 py-2 px-3 text-xs font-bold rounded-lg text-slate-500 transition">
+                <i class="fa-solid fa-calculator mr-1"></i> Công Cụ & Flashcard
+            </button>
+            <button onclick="switchTab('logs')" id="tab-logs" class="tab-btn whitespace-nowrap flex-1 py-2 px-3 text-xs font-bold rounded-lg text-slate-500 transition">
+                <i class="fa-solid fa-pen-to-square mr-1"></i> Nhật Ký & Điểm Thi
+            </button>
+            <button onclick="switchTab('errors')" id="tab-errors" class="tab-btn whitespace-nowrap flex-1 py-2 px-3 text-xs font-bold rounded-lg text-slate-500 transition">
+                <i class="fa-solid fa-book-medical mr-1"></i> Sổ Lỗi Sai & Delay
+            </button>
+        </div>
+
+        <!-- ==========================================
+             TAB 1: THỜI KHÓA BIỂU 7 NGÀY CHUYÊN SINH
+             ========================================== -->
+        <section id="content-timetable" class="space-y-4">
+            <div class="flex justify-between items-center px-1 flex-wrap gap-2">
+                <div>
+                    <h3 class="font-bold text-slate-800 text-base">Thời khóa biểu Chuyên Sinh trong tuần</h3>
+                    <p class="text-[11px] text-slate-500">Phân bổ đều: Lý thuyết cơ chế, Bài tập Di truyền & Luyện đề tự luận</p>
+                </div>
+                <button onclick="openResetConfirmModal()" class="text-xs text-slate-500 hover:text-rose-600 transition flex items-center gap-1 py-1.5 px-2.5 rounded-lg bg-white border border-slate-200 shadow-2xs">
+                    <i class="fa-solid fa-arrow-rotate-left text-[11px]"></i>
+                    <span>Khôi phục lịch mẫu</span>
+                </button>
+            </div>
+
+            <div id="timetable-accordion-container" class="space-y-3">
+                <!-- Render 7 ngày bằng JS -->
+            </div>
+        </section>
+
+        <!-- ==========================================
+             TAB 2: LỘ TRÌNH 11 TUẦN CHINH PHỤC GIẢI NHẤT
+             ========================================== -->
+        <section id="content-roadmap" class="space-y-4 hidden">
+            <div class="flex justify-between items-center px-1">
+                <div>
+                    <h3 class="font-bold text-slate-800 text-base">Checklist Chuyên Đề 11 Tuần</h3>
+                    <p class="text-[11px] text-slate-500">Bám sát cấu trúc đề thi HSG Cấp Tỉnh từ Tế bào học đến Sinh thái</p>
+                </div>
+                <span class="text-xs bg-bio-50 text-bio-700 font-bold px-2.5 py-1 rounded-full border border-bio-200">Tự động lưu</span>
+            </div>
+
+            <div id="roadmap-accordion-container" class="space-y-3">
+                <!-- Render 11 tuần bằng JS -->
+            </div>
+        </section>
+
+        <!-- ==========================================
+             TAB 3: BỘ CÔNG CỤ TÍNH NHANH & FLASHCARD SINH HỌC
+             ========================================== -->
+        <section id="content-toolkit" class="space-y-5 hidden">
+            
+            <!-- PHẦN A: MÁY TÍNH CÔNG THỨC DI TRUYỀN -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- 1. Máy tính Cấu trúc ADN -->
+                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-3">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-dna text-bio-600"></i> Máy Tính Cấu Trúc Gen (ADN)
+                        </h3>
+                        <span class="text-[10px] bg-bio-50 text-bio-700 px-2 py-0.5 rounded font-semibold">1 Nu = 3.4 Å | 300 đvC</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500">Nhập <b>1 thông số kích thước</b> (N hoặc L) và <b>1 thông số loại Nu</b> (Số Nu loại A, %A hoặc số liên kết H):</p>
+                    
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                            <label class="font-semibold text-slate-600 block mb-1">Tổng số Nu (N)</label>
+                            <input type="number" id="calc-dna-n" placeholder="VD: 3000" class="w-full p-2 border rounded-xl focus:outline-none focus:border-bio-500">
+                        </div>
+                        <div>
+                            <label class="font-semibold text-slate-600 block mb-1">Chiều dài L (Å)</label>
+                            <input type="number" id="calc-dna-l" placeholder="VD: 5100" class="w-full p-2 border rounded-xl focus:outline-none focus:border-bio-500">
+                        </div>
+                        <div>
+                            <label class="font-semibold text-slate-600 block mb-1">Số Nu loại A (hoặc %A)</label>
+                            <input type="number" id="calc-dna-a" placeholder="VD: 600 hoặc 20" class="w-full p-2 border rounded-xl focus:outline-none focus:border-bio-500">
+                        </div>
+                        <div>
+                            <label class="font-semibold text-slate-600 block mb-1">Hoặc Liên kết H (2A+3G)</label>
+                            <input type="number" id="calc-dna-h" placeholder="VD: 3900" class="w-full p-2 border rounded-xl focus:outline-none focus:border-bio-500">
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <button onclick="calculateDNA()" class="flex-1 py-2 bg-bio-600 hover:bg-bio-700 text-white font-bold text-xs rounded-xl shadow-sm transition">
+                            Tính nhanh thông số Gen
+                        </button>
+                        <button onclick="clearDNACalc()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs rounded-xl transition">
+                            Xóa
+                        </button>
+                    </div>
+
+                    <div id="dna-result-box" class="hidden bg-bio-50/80 border border-bio-200 rounded-xl p-3 text-xs space-y-1.5 text-slate-700">
+                        <!-- Kết quả ADN render tại đây -->
+                    </div>
+                </div>
+
+                <!-- 2. Máy tính Cân bằng Quần thể Hardy-Weinberg -->
+                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-3">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-users-rays text-teal-600"></i> Cân Bằng Hardy-Weinberg
+                        </h3>
+                        <span class="text-[10px] bg-teal-50 text-teal-700 px-2 py-0.5 rounded font-semibold">p²AA + 2pqAa + q²aa = 1</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500">Nhập <b>tần số alen lặn q(a)</b> HOẶC <b>tỉ lệ kiểu hình lặn aa (%)</b> trong quần thể cân bằng:</p>
+                    
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                            <label class="font-semibold text-slate-600 block mb-1">Tần số alen lặn q(a)</label>
+                            <input type="number" id="calc-hw-q" step="0.01" min="0" max="1" placeholder="VD: 0.3" class="w-full p-2 border rounded-xl focus:outline-none focus:border-teal-500">
+                        </div>
+                        <div>
+                            <label class="font-semibold text-slate-600 block mb-1">Tỉ lệ kiểu hình lặn aa (%)</label>
+                            <input type="number" id="calc-hw-aa" step="0.1" min="0" max="100" placeholder="VD: 16 (tức 16%)" class="w-full p-2 border rounded-xl focus:outline-none focus:border-teal-500">
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <button onclick="calculateHW()" class="flex-1 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-sm transition">
+                            Tính cấu trúc quần thể
+                        </button>
+                        <button onclick="clearHWCalc()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs rounded-xl transition">
+                            Xóa
+                        </button>
+                    </div>
+
+                    <div id="hw-result-box" class="hidden bg-teal-50/80 border border-teal-200 rounded-xl p-3 text-xs space-y-1.5 text-slate-700">
+                        <!-- Kết quả Hardy-Weinberg render tại đây -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- PHẦN B: FLASHCARDS ÔN NHANH CƠ CHẾ SINH HỌC -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+                <div class="flex justify-between items-center flex-wrap gap-2">
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-layer-group text-amber-500"></i> Thẻ Ghi Nhớ Nhanh (Bio Flashcards)
+                        </h3>
+                        <p class="text-[11px] text-slate-500">Bấm vào thẻ để lật xem từ khóa & cơ chế chuẩn chấm thi tự luận</p>
+                    </div>
+                    <button onclick="openFlashcardModal()" class="text-xs bg-bio-50 hover:bg-bio-100 text-bio-700 font-bold px-3 py-1.5 rounded-xl border border-bio-200 transition flex items-center gap-1">
+                        <i class="fa-solid fa-plus"></i> Thêm thẻ mới
+                    </button>
+                </div>
+
+                <!-- Khu vực Lật Thẻ 3D -->
+                <div class="max-w-lg mx-auto">
+                    <div onclick="flipCurrentCard()" class="perspective-1000 cursor-pointer select-none h-52 w-full">
+                        <div id="flashcard-inner" class="transform-style-3d relative w-full h-full rounded-2xl shadow-md">
+                            <!-- Mặt trước (Câu hỏi / Khái niệm) -->
+                            <div class="backface-hidden absolute inset-0 bg-gradient-to-br from-bio-600 to-teal-700 text-white rounded-2xl p-5 flex flex-col justify-between">
+                                <div class="flex justify-between items-center">
+                                    <span id="fc-category" class="text-[10px] font-bold bg-white/20 px-2.5 py-0.5 rounded-full backdrop-blur">Chuyên đề</span>
+                                    <span id="fc-counter" class="text-[11px] font-semibold text-bio-100">1 / 6</span>
+                                </div>
+                                <div class="my-auto text-center px-2">
+                                    <p id="fc-front" class="font-bold text-sm sm:text-base leading-relaxed">Đang tải câu hỏi...</p>
+                                </div>
+                                <div class="text-center text-[10px] text-bio-200 flex items-center justify-center gap-1">
+                                    <i class="fa-solid fa-rotate"></i> Chạm vào thẻ để xem đáp án chuẩn
+                                </div>
+                            </div>
+
+                            <!-- Mặt sau (Đáp án / Từ khóa ăn điểm) -->
+                            <div class="backface-hidden rotate-y-180 absolute inset-0 bg-amber-50 border-2 border-amber-300 text-slate-800 rounded-2xl p-5 flex flex-col justify-between overflow-y-auto">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-[10px] font-extrabold bg-amber-200 text-amber-900 px-2.5 py-0.5 rounded-full">ĐÁP ÁN & TỪ KHÓA</span>
+                                    <button onclick="deleteCurrentFlashcard(event)" class="text-slate-400 hover:text-rose-500 text-xs" title="Xóa thẻ này">
+                                        <i class="fa-regular fa-trash-can"></i>
+                                    </button>
+                                </div>
+                                <div class="my-auto text-left px-1">
+                                    <p id="fc-back" class="text-xs sm:text-sm font-medium text-slate-700 leading-relaxed whitespace-pre-line">Đang tải đáp án...</p>
+                                </div>
+                                <div class="text-center text-[10px] text-amber-700 font-semibold">
+                                    <i class="fa-solid fa-rotate"></i> Chạm để lật lại câu hỏi
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Điều hướng Flashcard -->
+                    <div class="flex justify-between items-center mt-3 px-2">
+                        <button onclick="prevFlashcard()" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-arrow-left"></i> Thẻ trước
+                        </button>
+                        <button onclick="flipCurrentCard()" class="px-4 py-2 rounded-xl bg-bio-50 text-bio-700 text-xs font-bold border border-bio-200">
+                            Lật thẻ
+                        </button>
+                        <button onclick="nextFlashcard()" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition flex items-center gap-1.5">
+                            Thẻ tiếp <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             TAB 4: NHẬT KÝ THỜI GIAN THỰC & ĐIỂM THI THỬ (/20)
+             ========================================== -->
+        <section id="content-logs" class="space-y-4 hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Form 1: Ghi nhận giờ học thực tế so với kế hoạch -->
+                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-3">
+                    <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-stopwatch text-bio-600"></i> Nhật ký giờ học (Kế hoạch vs Thực tế)
+                    </h3>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <label class="text-[11px] font-semibold text-slate-600 block mb-1">Ngày học</label>
+                            <input type="date" id="study-date" class="w-full text-xs p-2 border rounded-xl focus:outline-none focus:border-bio-500">
+                        </div>
+                        <div>
+                            <label class="text-[11px] font-semibold text-slate-600 block mb-1">Dự kiến (h)</label>
+                            <input type="number" id="plan-hours" step="0.5" placeholder="VD: 3.0" class="w-full text-xs p-2 border rounded-xl focus:outline-none focus:border-bio-500">
+                        </div>
+                        <div>
+                            <label class="text-[11px] font-semibold text-slate-600 block mb-1">Thực tế (h) *</label>
+                            <input type="number" id="actual-hours" step="0.5" placeholder="VD: 2.5" class="w-full text-xs p-2 border rounded-xl focus:outline-none focus:border-bio-500">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-slate-600 block mb-1">Chuyên đề Sinh đã học *</label>
+                        <input type="text" id="study-topic" placeholder="VD: Giải 15 bài Phả hệ + Ôn cơ chế Quang hợp C4" class="w-full text-xs p-2.5 border rounded-xl focus:outline-none focus:border-bio-500">
+                    </div>
+                    <button onclick="addStudyLog()" class="w-full py-2.5 bg-bio-600 text-white font-bold text-xs rounded-xl shadow-md hover:bg-bio-700 transition">
+                        Lưu buổi học (+Giữ chuỗi 🔥)
+                    </button>
+                </div>
+
+                <!-- Form 2: Điểm luyện đề thi thử (Thang điểm 20) -->
+                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-3 flex flex-col justify-between">
+                    <div class="space-y-3">
+                        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-trophy text-amber-500"></i> Kết quả Luyện đề HSG (Thang 20)
+                        </h3>
+                        <div>
+                            <label class="text-xs font-semibold text-slate-600 block mb-1">Tên đề thi thử *</label>
+                            <input type="text" id="exam-name" placeholder="VD: Đề HSG Tỉnh Phú Thọ 2025 - Đề số 1" class="w-full text-xs p-2.5 border rounded-xl focus:outline-none focus:border-amber-500">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-xs font-semibold text-slate-600 block mb-1">Điểm đạt được (/20) *</label>
+                                <input type="number" id="exam-score" min="0" max="20" step="0.25" placeholder="VD: 17.25" class="w-full text-xs p-2.5 border rounded-xl focus:outline-none focus:border-amber-500">
+                            </div>
+                            <div>
+                                <label class="text-xs font-semibold text-slate-600 block mb-1">Thời gian làm (phút)</label>
+                                <input type="number" id="exam-duration" placeholder="VD: 150" value="150" class="w-full text-xs p-2.5 border rounded-xl focus:outline-none focus:border-amber-500">
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="addExamLog()" class="w-full py-2.5 bg-amber-500 text-white font-bold text-xs rounded-xl shadow-md hover:bg-amber-600 transition mt-2">
+                        Lưu điểm thi thử
+                    </button>
+                </div>
+            </div>
+
+            <!-- Danh sách lịch sử học tập & luyện đề -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-3">
+                <h3 class="font-bold text-slate-800 text-sm">Lịch sử rèn luyện & Giải đề</h3>
+                <div id="logs-history-list" class="space-y-2 max-h-80 overflow-y-auto hide-scrollbar text-xs">
+                    <!-- Javascript list -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             TAB 5: SỔ TAY LỖI SAI SINH HỌC & VIỆC TRỄ HẠN (DELAY)
+             ========================================== -->
+        <section id="content-errors" class="space-y-4 hidden">
+            
+            <!-- Thống kê nhanh điểm yếu theo Chuyên đề -->
+            <div id="weakness-radar-box" class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-2">
+                <h3 class="font-bold text-slate-800 text-xs uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                    <i class="fa-solid fa-chart-pie text-rose-500"></i> Phân tích chuyên đề hay sai / trễ hạn
+                </h3>
+                <div id="weakness-bars" class="space-y-1.5 text-xs">
+                    <!-- Render thanh cảnh báo chuyên đề hay sai -->
+                </div>
+            </div>
+
+            <!-- Form thêm lỗi sai hoặc việc Delay -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-3">
+                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-book-medical text-rose-500"></i> Ghi nhận Lỗi sai Sinh học / Việc bị Delay
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-xs font-semibold text-slate-600 block mb-1">Loại ghi chú</label>
+                        <select id="error-type" class="w-full text-xs p-2.5 border rounded-xl focus:outline-none focus:border-bio-500 bg-white font-semibold">
+                            <option value="mistake">🐞 Lỗi sai kiến thức / Giải bài</option>
+                            <option value="delay">⏳ Việc bị trễ hạn (Delay)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-slate-600 block mb-1">Chuyên đề Sinh học</label>
+                        <select id="error-category" class="w-full text-xs p-2.5 border rounded-xl focus:outline-none focus:border-bio-500 bg-white">
+                            <option value="Hoán vị gen & Tương tác gen">Hoán vị gen & Tương tác gen</option>
+                            <option value="Cơ chế Sinh lý Thực vật">Cơ chế Sinh lý Thực vật</option>
+                            <option value="Cơ chế Sinh lý Động vật">Cơ chế Sinh lý Động vật</option>
+                            <option value="Di truyền Phân tử & Đột biến">Di truyền Phân tử & Đột biến</option>
+                            <option value="Di truyền Quần thể & Phả hệ">Di truyền Quần thể & Phả hệ</option>
+                            <option value="Tế bào học & Vi sinh vật">Tế bào học & Vi sinh vật</option>
+                            <option value="Sinh thái & Tiến hóa">Sinh thái & Tiến hóa</option>
+                            <option value="Kỹ năng trình bày & Đọc đề">Kỹ năng trình bày & Đọc đề</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-slate-600 block mb-1">Mô tả lỗi nhầm lẫn / Công việc bị trễ *</label>
+                    <textarea id="error-desc" rows="2" placeholder="VD: Quên nhân 2 khi tính số tế bào xảy ra hoán vị gen, hoặc chưa làm xong đề Sinh lý Thực vật..." class="w-full text-xs p-2.5 border rounded-xl focus:outline-none focus:border-bio-500"></textarea>
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-slate-600 block mb-1">Cách khắc phục / Lời giải chuẩn sinh lý / Lịch bù *</label>
+                    <textarea id="error-fix" rows="2" placeholder="VD: Tần số HVG f = (Tổng giao tử hoán vị) = 1/2 tỉ lệ tế bào có HVG. Hẹn chiều Thứ 7 làm bù..." class="w-full text-xs p-2.5 border rounded-xl focus:outline-none focus:border-bio-500"></textarea>
+                </div>
+                <button onclick="addErrorLog()" class="w-full py-2.5 bg-rose-600 text-white font-bold text-xs rounded-xl shadow-md hover:bg-rose-700 transition">
+                    Lưu vào Sổ tay khắc phục
+                </button>
+            </div>
+
+            <!-- Danh sách thẻ lỗi sai & delay -->
+            <div id="error-cards-container" class="space-y-3">
+                <!-- Javascript list error -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ==========================================
+         FLOATING POMODORO TIMER CHUYÊN SINH
+         ========================================== -->
+    <div id="pomodoro-widget" class="fixed bottom-4 right-4 z-40 bg-white p-3.5 rounded-2xl shadow-2xl border border-bio-200 w-48 transition-all">
+        <div class="flex justify-between items-center border-b border-slate-100 pb-2 mb-2">
+            <h4 class="text-xs font-extrabold text-bio-800 flex items-center gap-1.5">
+                <i class="fa-solid fa-hourglass-start text-bio-600"></i> Đồng hồ Học Sinh
+            </h4>
+            <button onclick="togglePomodoro()" class="text-slate-400 hover:text-slate-600 p-1">
+                <i class="fa-solid fa-chevron-down text-xs" id="pomo-toggle-icon"></i>
+            </button>
+        </div>
+        <div id="pomo-content" class="text-center space-y-2.5">
+            <div class="grid grid-cols-3 gap-1">
+                <button onclick="setPomoMode('focus')" id="btn-pomo-focus" class="text-[10px] font-bold py-1 rounded-md bg-bio-100 text-bio-800 transition" title="45 phút học chuyên đề">45p Học</button>
+                <button onclick="setPomoMode('exam')" id="btn-pomo-exam" class="text-[10px] font-bold py-1 rounded-md text-slate-500 hover:bg-slate-100 transition" title="150 phút giải đề HSG">150p Đề</button>
+                <button onclick="setPomoMode('break')" id="btn-pomo-break" class="text-[10px] font-bold py-1 rounded-md text-slate-500 hover:bg-slate-100 transition" title="5 phút nghỉ giải lao">5p Nghỉ</button>
+            </div>
+            <div id="pomo-time" class="text-2xl font-black text-slate-800 tracking-wider font-mono bg-slate-50 py-1.5 rounded-xl border border-slate-100">45:00</div>
+            <div class="flex justify-center gap-2">
+                <button onclick="startPomo()" id="btn-pomo-start" class="bg-bio-600 hover:bg-bio-700 text-white w-9 h-9 rounded-full flex items-center justify-center shadow-md transition" title="Bắt đầu">
+                    <i class="fa-solid fa-play text-xs"></i>
+                </button>
+                <button onclick="pausePomo()" id="btn-pomo-pause" class="bg-amber-500 hover:bg-amber-600 text-white w-9 h-9 rounded-full flex items-center justify-center shadow-md transition hidden" title="Tạm dừng">
+                    <i class="fa-solid fa-pause text-xs"></i>
+                </button>
+                <button onclick="resetPomo()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 w-9 h-9 rounded-full flex items-center justify-center transition" title="Đặt lại">
+                    <i class="fa-solid fa-rotate-right text-xs"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         MODALS (KHÔNG DÙNG ALERT / CONFIRM)
+         ========================================== -->
+
+    <!-- 1. Modal Thêm / Sửa Khung Giờ Học Sinh Học -->
+    <div id="task-modal" class="fixed inset-0 bg-black/60 z-50 flex items-end md:items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 id="task-modal-title" class="font-bold text-sm text-slate-800">Thêm khung giờ học Sinh</h3>
+                <button onclick="closeTaskModal()" class="text-slate-400 hover:text-slate-600 text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <input type="hidden" id="modal-day-id">
+            <input type="hidden" id="modal-task-idx">
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="font-semibold text-slate-600 block mb-1">Nhãn phân môn Sinh học</label>
+                    <select id="modal-task-tag" class="w-full p-2.5 border rounded-xl focus:outline-none focus:border-bio-500 bg-white font-medium">
+                        <option value="🔬 Tế bào & VSV">🔬 Tế bào học & Vi sinh vật</option>
+                        <option value="🧬 Di truyền Phân tử">🧬 Di truyền Phân tử & Công nghệ Gen</option>
+                        <option value="📊 Quy luật Di truyền">📊 Quy luật Di truyền (Mendel, HVG, Quần thể)</option>
+                        <option value="🌿 Sinh lý Thực vật">🌿 Sinh lý học Thực vật</option>
+                        <option value="🫀 Sinh lý Động vật">🫀 Sinh lý học Động vật</option>
+                        <option value="🌍 Sinh thái & Tiến hóa">🌍 Sinh thái học & Tiến hóa</option>
+                        <option value="📝 Luyện đề HSG">📝 Luyện đề HSG Tự luận / Thực chiến</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="font-semibold text-slate-600 block mb-1">Khung giờ học</label>
+                    <input type="text" id="modal-task-time" placeholder="VD: 07:30 - 09:30 hoặc 19h30 - 22h00" class="w-full p-2.5 border rounded-xl focus:outline-none focus:border-bio-500">
+                </div>
+                <div>
+                    <label class="font-semibold text-slate-600 block mb-1">Nội dung nhiệm vụ cụ thể *</label>
+                    <input type="text" id="modal-task-desc" onkeydown="if(event.key==='Enter') saveTaskModal()" placeholder="VD: Vẽ sơ đồ Chu trình Krebs & giải 10 câu Hô hấp" class="w-full p-2.5 border rounded-xl focus:outline-none focus:border-bio-500">
+                </div>
+            </div>
+            <div class="flex gap-2 pt-1">
+                <button onclick="closeTaskModal()" class="flex-1 py-2.5 border border-slate-200 text-slate-600 font-semibold text-xs rounded-xl hover:bg-slate-50 transition">
+                    Hủy
+                </button>
+                <button onclick="saveTaskModal()" class="flex-1 py-2.5 bg-bio-600 text-white font-bold text-xs rounded-xl hover:bg-bio-700 shadow-md transition">
+                    Lưu lịch học
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Modal Cài Đặt Mục Tiêu Kỳ Thi -->
+    <div id="goal-modal" class="fixed inset-0 bg-black/60 z-50 flex items-end md:items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-sm text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-bullseye text-bio-600"></i> Mục tiêu Kỳ thi Sinh học
+                </h3>
+                <button onclick="closeGoalModal()" class="text-slate-400 hover:text-slate-600 text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="font-semibold text-slate-600 block mb-1">Tên kỳ thi *</label>
+                    <input type="text" id="goal-exam-name" placeholder="VD: Kỳ thi HSG Sinh Học Cấp Tỉnh 2027" class="w-full p-2.5 border rounded-xl focus:outline-none focus:border-bio-500">
+                </div>
+                <div>
+                    <label class="font-semibold text-slate-600 block mb-1">Ngày thi dự kiến *</label>
+                    <input type="date" id="goal-exam-date" class="w-full p-2.5 border rounded-xl focus:outline-none focus:border-bio-500">
+                </div>
+                <div>
+                    <label class="font-semibold text-slate-600 block mb-1">Giải thưởng / Điểm số mục tiêu</label>
+                    <input type="text" id="goal-target-score" placeholder="VD: Giải Nhất Tỉnh (18.0+/20 điểm)" class="w-full p-2.5 border rounded-xl focus:outline-none focus:border-bio-500">
+                </div>
+                <div>
+                    <label class="font-semibold text-slate-600 block mb-1">Lời nhắc quyết tâm</label>
+                    <textarea id="goal-motto" rows="2" class="w-full p-2.5 border rounded-xl focus:outline-none focus:border-bio-500"></textarea>
+                </div>
+            </div>
+            <div class="flex gap-2 pt-1">
+                <button onclick="closeGoalModal()" class="flex-1 py-2.5 border border-slate-200 text-slate-600 font-semibold text-xs rounded-xl hover:bg-slate-50 transition">
+                    Đóng
+                </button>
+                <button onclick="saveGoalModal()" class="flex-1 py-2.5 bg-bio-600 text-white font-bold text-xs rounded-xl hover:bg-bio-700 shadow-md transition">
+                    Lưu mục tiêu
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Modal Thêm Flashcard Sinh Học Mới -->
+    <div id="flashcard-modal" class="fixed inset-0 bg-black/60 z-50 flex items-end md:items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-sm text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-layer-group text-bio-600"></i> Tạo Thẻ Flashcard Sinh Học
+                </h3>
+                <button onclick="closeFlashcardModal()" class="text-slate-400 hover:text-slate-600 text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="font-semibold text-slate-600 block mb-1">Phân môn</label>
+                    <input type="text" id="fc-input-cat" placeholder="VD: Sinh lý Thực vật / Di truyền phân tử" class="w-full p-2.5 border rounded-xl focus:outline-none focus:border-bio-500">
+                </div>
+                <div>
+                    <label class="font-semibold text-slate-600 block mb-1">Mặt trước (Câu hỏi / Cơ chế) *</label>
+                    <textarea id="fc-input-front" rows="2" placeholder="VD: Phân biệt chất nhận CO2 đầu tiên ở thực vật C3 và C4?" class="w-full p-2.5 border rounded-xl focus:outline-none focus:border-bio-500"></textarea>
+                </div>
+                <div>
+                    <label class="font-semibold text-slate-600 block mb-1">Mặt sau (Đáp án & Từ khóa chấm điểm) *</label>
+                    <textarea id="fc-input-back" rows="3" placeholder="VD: - Thực vật C3: Hợp chất 5C (Ribulose-1,5-bisphosphate / RuBP)&#10;- Thực vật C4 & CAM: Hợp chất 3C (PEP - Phosphoenolpyruvate)" class="w-full p-2.5 border rounded-xl focus:outline-none focus:border-bio-500"></textarea>
+                </div>
+            </div>
+            <div class="flex gap-2 pt-1">
+                <button onclick="closeFlashcardModal()" class="flex-1 py-2.5 border border-slate-200 text-slate-600 font-semibold text-xs rounded-xl hover:bg-slate-50 transition">
+                    Hủy
+                </button>
+                <button onclick="saveNewFlashcard()" class="flex-1 py-2.5 bg-bio-600 text-white font-bold text-xs rounded-xl hover:bg-bio-700 shadow-md transition">
+                    Thêm Flashcard
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Modal Xác Nhận Khôi Phục Lịch Gốc (Thay thế confirm()) -->
+    <div id="reset-confirm-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-xs w-full p-5 space-y-4 shadow-2xl text-center">
+            <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto text-xl">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 class="font-bold text-sm text-slate-800">Khôi phục lịch học mẫu?</h3>
+            <p class="text-xs text-slate-500 leading-relaxed">
+                Thời khóa biểu 7 ngày sẽ quay về lịch mẫu Chuyên Sinh ban đầu. Nhật ký giờ học và Sổ lỗi sai của bạn vẫn được giữ nguyên.
+            </p>
+            <div class="flex gap-2">
+                <button onclick="closeResetConfirmModal()" class="flex-1 py-2.5 border border-slate-200 text-slate-600 font-semibold text-xs rounded-xl hover:bg-slate-50">
+                    Hủy
+                </button>
+                <button onclick="confirmResetTimetable()" class="flex-1 py-2.5 bg-rose-600 text-white font-bold text-xs rounded-xl hover:bg-rose-700 shadow-md">
+                    Đồng ý đặt lại
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. Modal Sao Lưu / Khôi Phục Dữ Liệu (Backup JSON) -->
+    <div id="backup-modal" class="fixed inset-0 bg-black/60 z-50 flex items-end md:items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-sm text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-shield-halved text-bio-600"></i> Sao lưu & Khôi phục dữ liệu
+                </h3>
+                <button onclick="closeBackupModal()" class="text-slate-400 hover:text-slate-600 text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <p class="text-xs text-slate-600 leading-relaxed">
+                Tải file sao lưu (`.json`) về máy để bảo vệ tiến độ 11 tuần, sổ tay lỗi sai và flashcard của bạn khi đổi thiết bị.
+            </p>
+            <div class="space-y-2.5 text-xs">
+                <button onclick="exportBackupJSON()" class="w-full py-2.5 bg-bio-600 hover:bg-bio-700 text-white font-bold rounded-xl shadow flex items-center justify-center gap-2 transition">
+                    <i class="fa-solid fa-download"></i> Tải file Sao lưu (.json) về máy
+                </button>
+                <label class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl border border-slate-200 flex items-center justify-center gap-2 cursor-pointer transition">
+                    <i class="fa-solid fa-upload"></i> Chọn file (.json) để Khôi phục
+                    <input type="file" accept=".json" onchange="importBackupJSON(event)" class="hidden">
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. Modal Hướng Dẫn Cài App -->
+    <div id="install-modal" class="fixed inset-0 bg-black/60 z-50 flex items-end md:items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-md w-full p-5 space-y-4">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-base text-slate-800">Thêm BioPlanner vào Màn hình chính</h3>
+                <button onclick="closeInstallGuide()" class="text-slate-400 hover:text-slate-600 text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="space-y-3 text-xs leading-relaxed text-slate-600">
+                <p class="font-medium text-bio-700">Để mở sổ tay nhanh như ứng dụng gốc khi ôn bài:</p>
+                <ol class="list-decimal list-inside space-y-2 font-medium">
+                    <li>Nhấn vào biểu tượng <b>3 dấu chấm</b> (Chrome Android) hoặc nút <b>Chia sẻ</b> (Safari iOS).</li>
+                    <li>Chọn dòng <b>"Thêm vào màn hình chính"</b> (Add to Home screen).</li>
+                    <li>Xác nhận <b>"Thêm"</b> để hoàn tất!</li>
+                </ol>
+            </div>
+            <button onclick="closeInstallGuide()" class="w-full py-2.5 bg-bio-600 text-white font-bold text-xs rounded-xl">
+                Đã hiểu
+            </button>
+        </div>
+    </div>
+
+    <!-- 7. Modal Thêm/Sửa Tuần Lộ Trình -->
+    <div id="roadmap-week-modal" class="fixed inset-0 bg-black/60 z-50 flex items-end md:items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 id="rm-week-modal-title" class="font-bold text-sm text-slate-800">Thêm / Sửa Chuyên Đề</h3>
+                <button onclick="closeRoadmapWeekModal()" class="text-slate-400 hover:text-slate-600 text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <input type="hidden" id="rm-week-idx">
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="font-semibold text-slate-600 block mb-1">Tên Tuần / Chuyên Đề *</label>
+                    <input type="text" id="rm-week-title" placeholder="VD: Tuần 12: Luyện đề tổng hợp" class="w-full p-2.5 border rounded-xl focus:outline-none focus:border-bio-500">
+                </div>
+                <div>
+                    <label class="font-semibold text-slate-600 block mb-1">Mô tả mục tiêu</label>
+                    <textarea id="rm-week-desc" rows="2" placeholder="VD: Củng cố lại 100% các câu hỏi lý thuyết khó..." class="w-full p-2.5 border rounded-xl focus:outline-none focus:border-bio-500"></textarea>
+                </div>
+            </div>
+            <div class="flex gap-2 pt-1">
+                <button onclick="closeRoadmapWeekModal()" class="flex-1 py-2.5 border border-slate-200 text-slate-600 font-semibold text-xs rounded-xl hover:bg-slate-50 transition">
+                    Hủy
+                </button>
+                <button onclick="saveRoadmapWeekModal()" class="flex-1 py-2.5 bg-bio-600 text-white font-bold text-xs rounded-xl hover:bg-bio-700 shadow-md transition">
+                    Lưu chuyên đề
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 8. Modal Thêm/Sửa Nhiệm vụ Lộ Trình -->
+    <div id="roadmap-task-modal" class="fixed inset-0 bg-black/60 z-50 flex items-end md:items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 id="rm-task-modal-title" class="font-bold text-sm text-slate-800">Thêm / Sửa Nhiệm Vụ</h3>
+                <button onclick="closeRoadmapTaskModal()" class="text-slate-400 hover:text-slate-600 text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <input type="hidden" id="rm-task-week-idx">
+            <input type="hidden" id="rm-task-idx">
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="font-semibold text-slate-600 block mb-1">Nội dung nhiệm vụ Sinh học *</label>
+                    <textarea id="rm-task-desc" rows="3" placeholder="VD: Giải 5 bài tập Phả hệ mức độ Vận dụng cao..." class="w-full p-2.5 border rounded-xl focus:outline-none focus:border-bio-500"></textarea>
+                </div>
+            </div>
+            <div class="flex gap-2 pt-1">
+                <button onclick="closeRoadmapTaskModal()" class="flex-1 py-2.5 border border-slate-200 text-slate-600 font-semibold text-xs rounded-xl hover:bg-slate-50 transition">
+                    Hủy
+                </button>
+                <button onclick="saveRoadmapTaskModal()" class="flex-1 py-2.5 bg-bio-600 text-white font-bold text-xs rounded-xl hover:bg-bio-700 shadow-md transition">
+                    Lưu nhiệm vụ
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-20 left-1/2 -translate-x-1/2 bg-slate-900/95 backdrop-blur text-white text-xs px-4 py-2.5 rounded-full shadow-xl opacity-0 transition-opacity pointer-events-none z-50 flex items-center gap-2 whitespace-nowrap">
+        <i class="fa-solid fa-circle-check text-bio-400"></i>
+        <span id="toast-msg">Đã lưu thành công!</span>
+    </div>
+
+    <!-- ==========================================
+         JAVASCRIPT LOGIC TOÀN DIỆN
+         ========================================== -->
+    <script>
+        // 1. THỜI KHÓA BIỂU 7 NGÀY CHUYÊN SINH MẪU
+        const DEFAULT_BIO_TIMETABLE = [
+            {
+                dayId: 1,
+                dayName: "Thứ Hai",
+                subtitle: "Trọng tâm: Sinh học Tế bào & Chuyển hóa vật chất, năng lượng",
+                tasks: [
+                    "[🔬 Tế bào & VSV] 07:00 - 09:00: Ôn cấu trúc màng sinh chất, vận chuyển qua màng & Động học Enzyme",
+                    "[🔬 Tế bào & VSV] 14:00 - 16:00: Sơ đồ hóa Hô hấp tế bào (Đường phân, Chu trình Krebs, Chuỗi truyền e)",
+                    "[📊 Quy luật Di truyền] 20:00 - 22:00: Giải 10 bài tập xác suất phân ly độc lập & tương tác gen"
+                ]
+            },
+            {
+                dayId: 2,
+                dayName: "Thứ Ba",
+                subtitle: "Trọng tâm: Cơ chế Di truyền Phân tử & Công nghệ Gen",
+                tasks: [
+                    "[🧬 Di truyền Phân tử] 07:00 - 09:00: Cơ chế Tái bản ADN, Phiên mã, Dịch mã (Nhân sơ vs Nhân thực)",
+                    "[🧬 Di truyền Phân tử] 14:00 - 16:30: Mô hình điều hòa Operon Lac & Các dạng đột biến điểm",
+                    "[🧬 Di truyền Phân tử] 20:00 - 21:30: Bài tập nguyên lý PCR, Enzyme cắt giới hạn & Vector chuyển gen"
+                ]
+            },
+            {
+                dayId: 3,
+                dayName: "Thứ Tư",
+                subtitle: "Trọng tâm: Quy luật Di truyền (Liên kết, Hoán vị gen & Nhiễm sắc thể)",
+                tasks: [
+                    "[📊 Quy luật Di truyền] 07:00 - 09:30: Cơ chế bắt chéo NST & Phương pháp tính tần số Hoán vị gen (f)",
+                    "[📊 Quy luật Di truyền] 14:00 - 16:30: Bài toán kết hợp Tương tác gen + Hoán vị gen + Liên kết giới tính",
+                    "[🔬 Tế bào & VSV] 20:00 - 21:30: Ôn tập các hình thức dinh dưỡng & sinh trưởng của Vi sinh vật"
+                ]
+            },
+            {
+                dayId: 4,
+                dayName: "Thứ Năm",
+                subtitle: "Trọng tâm: Sinh lý học Thực vật chuyên sâu",
+                tasks: [
+                    "[🌿 Sinh lý Thực vật] 07:00 - 09:00: Cơ chế hấp thụ nước, khoáng & Đóng mở khí khổng chủ động/bị động",
+                    "[🌿 Sinh lý Thực vật] 14:00 - 16:30: So sánh Quang hợp C3, C4, CAM & Điểm bù/bão hòa CO2, ánh sáng",
+                    "[🌿 Sinh lý Thực vật] 20:00 - 21:30: Tác động sinh lý của 5 nhóm Phytohormone & Quang chu kỳ"
+                ]
+            },
+            {
+                dayId: 5,
+                dayName: "Thứ Sáu",
+                subtitle: "Trọng tâm: Sinh lý học Động vật (Tuần hoàn, Hô hấp, Thần kinh, Nội tiết)",
+                tasks: [
+                    "[🫀 Sinh lý Động vật] 07:00 - 09:00: Điện thế nghỉ, Điện thế hoạt động & Truyền tin qua Synapse",
+                    "[🫀 Sinh lý Động vật] 14:00 - 16:30: Cơ chế điều hòa hoạt động Tim mạch, Huyết áp & Hệ đệm pH máu",
+                    "[🫀 Sinh lý Động vật] 20:00 - 22:00: Sơ đồ điều hòa ngược âm tính/dương tính các tuyến Nội tiết"
+                ]
+            },
+            {
+                dayId: 6,
+                dayName: "Thứ Bảy",
+                subtitle: "Trọng tâm: Di truyền Quần thể, Phả hệ & Thực chiến giải đề 150 phút",
+                tasks: [
+                    "[📊 Quy luật Di truyền] 07:30 - 09:30: Di truyền Quần thể (Hardy-Weinberg, Tự thụ phấn) & Giải bài Phả hệ",
+                    "[📝 Luyện đề HSG] 14:00 - 16:30: Bấm đồng hồ 150 phút giải Đề Thi Thử HSG Cấp Tỉnh",
+                    "[📝 Luyện đề HSG] 20:00 - 21:30: Chấm bài theo barem 20 điểm & Ghi chép vào Sổ tay lỗi sai"
+                ]
+            },
+            {
+                dayId: 0,
+                dayName: "Chủ Nhật",
+                subtitle: "Trọng tâm: Sinh thái, Tiến hóa & Tổng rà soát Sổ tay lỗi sai",
+                tasks: [
+                    "[🌍 Sinh thái & Tiến hóa] 08:00 - 10:00: Các nhân tố tiến hóa, Lưới thức ăn & Hiệu suất sinh thái",
+                    "[📝 Luyện đề HSG] 10:15 - 11:30: Ôn lại Flashcard & Giải quyết dứt điểm các mục trong Sổ Lỗi Sai",
+                    "[🌿 Sinh lý Thực vật] Chiều & Tối: Nghỉ ngơi, thể thao tái tạo năng lượng cho tuần mới"
+                ]
+            }
+        ];
+
+        // 2. DỮ LIỆU LỘ TRÌNH 11 TUẦN HSG SINH HỌC
+        const ROADMAP_DATA = [
+            {
+                week: 1,
+                title: "Tuần 1: Sinh học Tế bào & Tế bào học chuyên sâu (Phần 1)",
+                desc: "Thành phần hóa học, cấu trúc tế bào nhân sơ/nhân thực & vận chuyển vật chất.",
+                tasks: [
+                    "Ôn tập chuyên sâu về Enzyme & Cơ chế động học enzyme (Km, Vmax, chất ức chế)",
+                    "Cấu trúc & chức năng sinh học các đại phân tử (Protein, Lipid, Carbohydrate)",
+                    "Cấu trúc màng sinh chất & Cơ chế vận chuyển qua màng (Thụ động, chủ động, xuất/nhập bào)",
+                    "Luyện 15 câu bài tập lý thuyết giải thích hiện tượng tế bào học"
+                ]
+            },
+            {
+                week: 2,
+                title: "Tuần 2: Sinh học Tế bào (Phần 2) - Chuyển hóa năng lượng",
+                desc: "Đi sâu hô hấp tế bào, quang hợp, truyền tin tế bào & phân bào.",
+                tasks: [
+                    "Sơ đồ hóa Đường phân, Chu trình Krebs & Chuỗi truyền electron hô hấp",
+                    "Phản ứng sáng, Chu trình Calvin (C3, C4, CAM) trong Quang hợp",
+                    "Cơ chế điều hòa chu kỳ tế bào (Điểm kiểm soát G1, G2, M) & Giảm phân bất thường",
+                    "Giải câu hỏi cơ chế sinh lý chuyển hóa năng lượng cấp tỉnh"
+                ]
+            },
+            {
+                week: 3,
+                title: "Tuần 3: Vi sinh vật học & Cơ chế Di truyền Phân tử (Phần 1)",
+                desc: "Chuyển hóa vi sinh vật, cấu trúc ADN/ARN và Tái bản ADN.",
+                tasks: [
+                    "Các hình thức dinh dưỡng & Pha sinh trưởng của quần thể vi sinh vật",
+                    "Cấu trúc chi tiết ADN, các dạng ARN, Nucleosome & Chromatin",
+                    "Cơ chế Tái bản ADN ở Nhân sơ vs Nhân thực (Hệ enzyme tham gia)",
+                    "Giải bài toán tính số Nucleotide, liên kết Hydrogen & đột biến điểm"
+                ]
+            },
+            {
+                week: 4,
+                title: "Tuần 4: Cơ chế Di truyền Phân tử (Phần 2) & Công nghệ Gen",
+                desc: "Phiên mã, dịch mã, đột biến gen, operon Lac & kỹ thuật di truyền.",
+                tasks: [
+                    "Cơ chế Phiên mã, Cắt bỏ Intron nối Exon & Dịch mã",
+                    "Cơ chế điều hòa hoạt động Gen (Mô hình Operon Lac và Operon Trp)",
+                    "Các dạng Đột biến gen & Hậu quả đến chuỗi Polypeptide",
+                    "Nguyên lý PCR, Điện di, Enzyme cắt giới hạn & Vector chuyển gen"
+                ]
+            },
+            {
+                week: 5,
+                title: "Tuần 5: Quy luật Mendel & Tương tác Gen",
+                desc: "Thành thạo các quy luật phân ly, phân ly độc lập & tương tác bổ sung, át chế.",
+                tasks: [
+                    "Rèn phản xạ giải nhanh các bài toán Mendel nhiều cặp gen",
+                    "Các kiểu Tương tác gen (Bổ sung 9:7, 9:6:1, 9:3:3:1; Át chế 12:3:1, 13:3; Cộng gộp)",
+                    "Tác động đa hiệu của gen & Gen liên kết hoàn toàn",
+                    "Giải 10 bài toán xác suất di truyền tương tác gen nâng cao"
+                ]
+            },
+            {
+                week: 6,
+                title: "Tuần 6: Hoán vị Gen & Di truyền Quần thể",
+                desc: "Củng cố trọng tâm: Hoán vị gen & Định luật Hardy-Weinberg.",
+                tasks: [
+                    "Cơ chế Bắt chéo NST ở Kỳ đầu I Giảm phân & Mối liên hệ giữa số tế bào HVG và tần số f",
+                    "Phương pháp xác định tần số Hoán vị gen (f) & Lập bản đồ di truyền (cM)",
+                    "Di truyền quần thể: Quần thể tự phối vs Quần thể ngẫu phối",
+                    "Định luật Hardy-Weinberg cho gen trên NST thường, NST giới tính và Alen 복 (Nhóm máu ABO)"
+                ]
+            },
+            {
+                week: 7,
+                title: "Tuần 7: Sinh lý học Thực vật & Sinh lý học Động vật",
+                desc: "Cơ chế sinh lý trao đổi nước, khoáng, cảm ứng, thần kinh & nội tiết.",
+                tasks: [
+                    "Dòng mạch gỗ, mạch rây & Cơ chế đóng mở khí khổng ở thực vật",
+                    "Cảm ứng, Sinh trưởng & Phytohormone (Auxin, Gibberellin, Cytokinin, ABA, Ethylene)",
+                    "Điện thế nghỉ, Điện thế hoạt động & Cung phản xạ thần kinh",
+                    "Hệ tuần hoàn, Huyết áp, Hô hấp & Cơ chế điều hòa Nội tiết (Insulin, Glucagon, Tuyến giáp)"
+                ]
+            },
+            {
+                week: 8,
+                title: "Tuần 8: Di truyền người, Sinh thái học & Tiến hóa",
+                desc: "Phân tích phả hệ, sinh thái học quần thể/quần xã & các nhân tố tiến hóa.",
+                tasks: [
+                    "Kỹ năng giải bài tập Phả hệ Di truyền người (Quy luật di truyền 2 tính trạng + HVG)",
+                    "Các Nhân tố Tiến hóa (Chọn lọc tự nhiên, Phiêu bạt di truyền, Dòng gen, Đột biến)",
+                    "Sinh thái: Chuỗi/Lưới thức ăn, Tháp sinh thái & Biến động số lượng cá thể",
+                    "Giải 5 bài tập Phả hệ phức tạp cấp Tỉnh"
+                ]
+            },
+            {
+                week: 9,
+                title: "Tuần 9: Giải Đề Thi HSG Tỉnh Các Năm Trước (Chặng 1)",
+                desc: "Luyện đề thực chiến trên thang điểm 20 & rèn kỹ năng trình bày tự luận.",
+                tasks: [
+                    "Giải 02 đề HSG Tỉnh chính thức các năm gần nhất (Bấm giờ 150 phút)",
+                    "Chấm điểm theo thang 20 & Rút kinh nghiệm các câu bị trừ điểm trình bày",
+                    "Rèn luyện kỹ năng giải thích cơ chế sinh lý mạch lạc, gạch đầu dòng đúng từ khóa",
+                    "Cập nhật các lỗi sai vào Sổ tay lỗi sai"
+                ]
+            },
+            {
+                week: 10,
+                title: "Tuần 10: Giải Đề Thi HSG Tỉnh & Phân Tích Lỗi Sai (Chặng 2)",
+                desc: "Tăng tốc luyện đề, khắc phục hoàn toàn các dạng bài còn yếu.",
+                tasks: [
+                    "Giải tiếp 02 đề HSG Tỉnh chuyên sâu (Mục tiêu điểm > 17.5/20)",
+                    "Review lại toàn bộ danh sách Lỗi sai trong Sổ tay",
+                    "Ôn tập kĩ lại phần Hoán vị gen & Các bài toán Xác suất phức tạp",
+                    "Hệ thống lại các sơ đồ Sinh lý Động/Thực vật trọng tâm"
+                ]
+            },
+            {
+                week: 11,
+                title: "Tuần 11: Tổng Ôn, Tinh Chỉnh Tâm Lý & Thi Thử Chặng Cuối",
+                desc: "Chuẩn bị tâm thế tốt nhất cho kỳ thi chính thức tháng 1/2027!",
+                tasks: [
+                    "Thi thử đề chuẩn cấu trúc lần cuối cùng",
+                    "Đọc lại toàn bộ Sổ tay lỗi sai & Flashcards từ khóa",
+                    "Rà soát lại danh mục các thuật ngữ Sinh học quan trọng",
+                    "Nghỉ ngơi hợp lý, giữ tinh thần tự tin chinh phục Giải Nhất!"
+                ]
+            }
+        ];
+
+        // 3. FLASHCARDS MẪU CHUYÊN SINH
+        const DEFAULT_FLASHCARDS = [
+            {
+                category: "Quang hợp Thực vật",
+                front: "So sánh chất nhận CO₂ đầu tiên và sản phẩm cố định CO₂ đầu tiên ở thực vật C3, C4 và CAM?",
+                back: "• Thực vật C3: Chất nhận là RuBP (5C) → Sản phẩm đầu tiên là APG / 3-PGA (3C).\n• Thực vật C4 & CAM: Chất nhận là PEP (3C) dưới xúc tác của PEP-carboxylase → Sản phẩm đầu tiên là AOA (4C), sau đó chuyển thành AM (4C)."
+            },
+            {
+                category: "Di truyền Phân tử",
+                front: "Vai trò của các enzyme chính trong quá trình Tái bản ADN ở E.coli?",
+                back: "1. Helicase: Cắt liên kết Hydrogen tháo xoắn.\n2. Topoisomerase (Gyrase): Giảm sức căng siêu xoắn phía trước chạc chữ Y.\n3. Primase: Tổng hợp đoạn mồi ARN (tạo đầu 3'-OH tự do).\n4. ADN Polymerase III: Tổng hợp mạch mới theo chiều 5'→3'.\n5. ADN Polymerase I: Loại bỏ mồi ARN và thay bằng ADN.\n6. Ligase: Nối các đoạn Okazaki (liên kết phosphodiester)."
+            },
+            {
+                category: "Quy luật Di truyền",
+                front: "Mối liên hệ giữa tỷ lệ tế bào xảy ra trao đổi chéo (a%) và tần số hoán vị gen (f%)?",
+                back: "• Trong 1 tế bào sinh giao tử (2n) giảm phân có trao đổi chéo tại 1 điểm: Tạo ra 2 giao tử liên kết và 2 giao tử hoán vị (tỉ lệ 50% HV).\n• Do đó: Tần số HVG (f%) = 1/2 × Tỉ lệ tế bào xảy ra hoán vị (a%).\n• Hệ quả: Dù 100% tế bào xảy ra trao đổi chéo đơn thì f tối đa cũng chỉ bằng 50%."
+            },
+            {
+                category: "Điều hòa Hoạt động Gen",
+                front: "Khi môi trường KHÔNG có Lactose và CÓ Glucose, Operon Lac ở E.coli hoạt động như thế nào?",
+                back: "• Gen điều hòa (lacI) luôn tổng hợp protein ức chế.\n• Không có Allolactose → Protein ức chế giữ nguyên cấu hình không gian và bám vào vùng vận hành (Operator - O).\n• ARN Polymerase không trượt qua được → Các gen cấu trúc Z, Y, A KHÔNG được phiên mã."
+            },
+            {
+                category: "Sinh lý Động vật",
+                front: "Tại sao tim tách rời khỏi cơ thể và đặt trong dung dịch sinh lý có đủ O₂ vẫn có khả năng đập nhịp nhàng?",
+                back: "• Nhờ Hệ dẫn truyền tim có khả năng tự phát xung điện (Tính tự động của tim).\n• Nút xoang nhĩ tự phát xung điện → truyền tới cơ tâm nhĩ (nhĩ co) → nút nhĩ thất → bó His → mạng lưới Purkinje → cơ tâm thất (thất co)."
+            },
+            {
+                category: "Sinh lý Thực vật",
+                front: "Cơ chế mở khí khổng chủ động ngoài ánh sáng diễn ra như thế nào?",
+                back: "1. Ánh sáng kích hoạt bơm proton H⁺-ATPase trên màng tế bào hạt đậu bơm H⁺ ra ngoài.\n2. Điện thế màng phân cực kéo K⁺, Cl⁻ đi vào tế bào khí khổng.\n3. Đồng thời lục lạp quang hợp tạo đường tích lũy.\n4. Áp suất thẩm thấu tăng → Nước thẩm thấu vào tế bào hạt đậu → Tế bào trương nước và mở khí khổng."
+            }
+        ];
+
+        const DEFAULT_GOAL = {
+            examName: "Kỳ thi HSG Sinh Học Cấp Tỉnh",
+            examDate: "2027-01-15",
+            targetScore: "Giải Nhất Tỉnh (18.0+/20 điểm)",
+            motto: "Nắm chắc cơ chế sinh lý - Giải nhanh toán di truyền - Trình bày tự luận chuẩn từ khóa! 🌿"
+        };
+
+        // 4. QUẢN LÝ TRẠNG THÁI ỨNG DỤNG (LOCALSTORAGE)
+        let appState = {
+            goal: null,
+            streakData: { count: 0, lastDate: null },
+            timetable: null,
+            checkedTimetable: {}, // { "d1_t0": true }
+            checkedRoadmap: {},   // { "w1_t0": true }
+            flashcards: [],
+            studyLogs: [],
+            examLogs: [],
+            errorLogs: []
+        };
+
+        let currentFcIndex = 0;
+
+        // KHỞI ĐỘNG ỨNG DỤNG
+        window.addEventListener('DOMContentLoaded', () => {
+            loadState();
+            renderStreak();
+            renderGoal();
+            displayCurrentDateInfo();
+            renderTimetable();
+            renderRoadmap();
+            renderFlashcard();
+            renderLogsHistory();
+            renderErrors();
+            updateDashboardMetrics();
+
+            const today = getLocalDateStr(new Date());
+            const dateInput = document.getElementById('study-date');
+            if (dateInput) dateInput.value = today;
+        });
+
+        function getLocalDateStr(d) {
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem('bio_master_planner_2027');
+            if (saved) {
+                try {
+                    appState = JSON.parse(saved);
+                } catch (e) {
+                    console.error("Lỗi đọc dữ liệu:", e);
+                }
+            }
+            if (!appState.goal) appState.goal = JSON.parse(JSON.stringify(DEFAULT_GOAL));
+            if (!appState.streakData) appState.streakData = { count: 0, lastDate: null };
+            if (!appState.timetable || !Array.isArray(appState.timetable) || appState.timetable.length === 0) {
+                appState.timetable = JSON.parse(JSON.stringify(DEFAULT_BIO_TIMETABLE));
+            }
+            // Khởi tạo Lộ trình vào State để có thể chỉnh sửa
+            if (!appState.roadmap || !Array.isArray(appState.roadmap) || appState.roadmap.length === 0) {
+                appState.roadmap = JSON.parse(JSON.stringify(ROADMAP_DATA));
+            }
+            if (!appState.checkedTimetable) appState.checkedTimetable = {};
+            if (!appState.checkedRoadmap) appState.checkedRoadmap = {};
+            if (!appState.flashcards || !Array.isArray(appState.flashcards) || appState.flashcards.length === 0) {
+                appState.flashcards = JSON.parse(JSON.stringify(DEFAULT_FLASHCARDS));
+            }
+            if (!appState.studyLogs) appState.studyLogs = [];
+            if (!appState.examLogs) appState.examLogs = [];
+            if (!appState.errorLogs) appState.errorLogs = [];
+        }
+
+        function saveState() {
+            localStorage.setItem('bio_master_planner_2027', JSON.stringify(appState));
+            updateDashboardMetrics();
+        }
+
+        // 5. CHUỖI KỶ LUẬT (STREAK LOGIC)
+        function renderStreak() {
+            const today = getLocalDateStr(new Date());
+            let yesterdayObj = new Date();
+            yesterdayObj.setDate(yesterdayObj.getDate() - 1);
+            const yesterday = getLocalDateStr(yesterdayObj);
+
+            if (appState.streakData.lastDate && appState.streakData.lastDate < yesterday) {
+                appState.streakData.count = 0;
+                saveState();
+            }
+
+            const badge = document.getElementById('streak-badge');
+            if (!badge) return;
+
+            if (appState.streakData.count > 0) {
+                badge.className = "bg-amber-500 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full shadow flex items-center gap-1 transition";
+                badge.innerHTML = `<i class="fa-solid fa-fire text-amber-100 animate-pulse"></i> <span id="streak-count">${appState.streakData.count}</span> ngày`;
+            } else {
+                badge.className = "bg-white/20 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full backdrop-blur flex items-center gap-1 transition";
+                badge.innerHTML = `<i class="fa-solid fa-fire text-amber-300"></i> <span id="streak-count">0</span> ngày`;
+            }
+        }
+
+        function registerActivity() {
+            const today = getLocalDateStr(new Date());
+            let yesterdayObj = new Date();
+            yesterdayObj.setDate(yesterdayObj.getDate() - 1);
+            const yesterday = getLocalDateStr(yesterdayObj);
+
+            if (appState.streakData.lastDate === today) return;
+
+            if (appState.streakData.lastDate === yesterday) {
+                appState.streakData.count++;
+            } else {
+                appState.streakData.count = 1;
+            }
+
+            appState.streakData.lastDate = today;
+            saveState();
+            renderStreak();
+            showToast(`🔥 Chuỗi kỷ luật Chuyên Sinh: ${appState.streakData.count} ngày liên tiếp!`);
+        }
+
+        // 6. BANNER, NGÀY THÁNG & MỤC TIÊU
+        function displayCurrentDateInfo() {
+            const now = new Date();
+            const days = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
+            const formattedDate = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}`;
+            document.getElementById('current-day-badge').innerHTML = `<i class="fa-regular fa-calendar-days mr-1"></i> Hôm nay: ${days[now.getDay()]} (${formattedDate})`;
+        }
+
+        function renderGoal() {
+            const g = appState.goal;
+            document.getElementById('banner-exam-title').innerText = `${g.examName || 'Chinh Phục HSG Sinh Học'} 🧬`;
+            document.getElementById('banner-motto').innerHTML = `${g.targetScore ? `Mục tiêu: <b class="text-amber-300">${g.targetScore}</b> — ` : ''}${g.motto || ''}`;
+
+            const badge = document.getElementById('countdown-badge');
+            if (!g.examDate) {
+                badge.innerHTML = `<i class="fa-solid fa-hourglass-half mr-1"></i> Đặt ngày thi`;
+                return;
+            }
+
+            const targetExamDate = new Date(g.examDate + 'T00:00:00');
+            const realNow = new Date();
+            const d1 = new Date(targetExamDate.getFullYear(), targetExamDate.getMonth(), targetExamDate.getDate());
+            const d2 = new Date(realNow.getFullYear(), realNow.getMonth(), realNow.getDate());
+            const diffDays = Math.round((d1 - d2) / (1000 * 60 * 60 * 24));
+
+            if (diffDays > 0) {
+                badge.innerHTML = `<i class="fa-solid fa-hourglass-half mr-1"></i> Còn ${diffDays} ngày`;
+            } else if (diffDays === 0) {
+                badge.innerHTML = `<i class="fa-solid fa-fire mr-1"></i> Hôm nay thi! Bình tĩnh tự tin!`;
+            } else {
+                badge.innerHTML = `<i class="fa-solid fa-flag-checkered mr-1"></i> Đã qua ${Math.abs(diffDays)} ngày`;
+            }
+        }
+
+        function openGoalModal() {
+            const g = appState.goal;
+            document.getElementById('goal-exam-name').value = g.examName || '';
+            document.getElementById('goal-exam-date').value = g.examDate || '';
+            document.getElementById('goal-target-score').value = g.targetScore || '';
+            document.getElementById('goal-motto').value = g.motto || '';
+            document.getElementById('goal-modal').classList.remove('hidden');
+        }
+
+        function closeGoalModal() {
+            document.getElementById('goal-modal').classList.add('hidden');
+        }
+
+        function saveGoalModal() {
+            const examName = document.getElementById('goal-exam-name').value.trim();
+            const examDate = document.getElementById('goal-exam-date').value;
+            const targetScore = document.getElementById('goal-target-score').value.trim();
+            const motto = document.getElementById('goal-motto').value.trim();
+
+            if (!examName || !examDate) {
+                showToast("Vui lòng nhập tên kỳ thi và ngày thi!");
+                return;
+            }
+            appState.goal = { examName, examDate, targetScore, motto };
+            saveState();
+            renderGoal();
+            closeGoalModal();
+            showToast("Đã cập nhật mục tiêu kỳ thi Sinh học!");
+        }
+
+        // CHUYỂN TAB
+        function switchTab(tabName) {
+            ['timetable', 'roadmap', 'toolkit', 'logs', 'errors'].forEach(t => {
+                document.getElementById(`content-${t}`).classList.add('hidden');
+                document.getElementById(`tab-${t}`).className = "tab-btn whitespace-nowrap flex-1 py-2 px-3 text-xs font-bold rounded-lg text-slate-500 transition";
+            });
+            document.getElementById(`content-${tabName}`).classList.remove('hidden');
+            document.getElementById(`tab-${tabName}`).className = "tab-btn whitespace-nowrap flex-1 py-2 px-3 text-xs font-bold rounded-lg text-bio-700 bg-bio-50 transition shadow-sm";
+        }
+
+        // 7. RENDER THỜI KHÓA BIỂU 7 NGÀY (CÓ GẮN NHÃN CHUYÊN ĐỀ SINH)
+        function formatBioTaskDisplay(taskStr) {
+            const match = taskStr.match(/^\[(.*?)\]\s*(.*)$/);
+            if (match) {
+                const tag = match[1];
+                const rest = match[2];
+                return `<span class="inline-block bg-bio-50 text-bio-700 border border-bio-200 text-[10px] font-bold px-2 py-0.5 rounded-md mr-1.5 mb-0.5">${tag}</span><span>${rest}</span>`;
+            }
+            return taskStr;
+        }
+
+        function renderTimetable() {
+            const container = document.getElementById('timetable-accordion-container');
+            container.innerHTML = '';
+
+            const todayDayId = new Date().getDay();
+            let todayTotal = 0;
+            let todayCompleted = 0;
+
+            appState.timetable.forEach((dayData) => {
+                const dayId = dayData.dayId;
+                let dayCompletedCount = 0;
+                const isCurrentDay = (dayId === todayDayId);
+
+                dayData.tasks.forEach((_, idx) => {
+                    const taskId = `d${dayId}_t${idx}`;
+                    const isChecked = appState.checkedTimetable[taskId];
+                    if (isChecked) dayCompletedCount++;
+                    if (isCurrentDay) {
+                        todayTotal++;
+                        if (isChecked) todayCompleted++;
+                    }
+                });
+
+                const taskCount = dayData.tasks.length;
+                const dayPercent = taskCount > 0 ? Math.round((dayCompletedCount / taskCount) * 100) : 0;
+
+                const dayEl = document.createElement('div');
+                dayEl.className = `bg-white rounded-2xl border ${isCurrentDay ? 'border-bio-400 ring-2 ring-bio-100' : 'border-slate-100'} shadow-sm overflow-hidden transition`;
+                
+                dayEl.innerHTML = `
+                    <div onclick="toggleDay(${dayId})" class="p-4 cursor-pointer flex justify-between items-center bg-white hover:bg-slate-50/80 transition select-none">
+                        <div class="pr-2">
+                            <div class="flex items-center gap-2 mb-1">
+                                <h4 class="font-bold text-slate-800 text-sm">${dayData.dayName}</h4>
+                                ${isCurrentDay ? '<span class="bg-bio-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">HÔM NAY</span>' : ''}
+                            </div>
+                            <p class="text-xs text-slate-500 leading-tight mb-2">${dayData.subtitle}</p>
+                            <div class="flex items-center gap-2">
+                                <div class="w-32 bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                                    <div class="bg-bio-500 h-1.5 rounded-full transition-all" style="width: ${dayPercent}%"></div>
+                                </div>
+                                <span class="text-[10px] font-bold text-bio-700">${dayCompletedCount}/${taskCount} ca học (${dayPercent}%)</span>
+                            </div>
+                        </div>
+                        <div id="chevron-d${dayId}" class="text-slate-400 transition-transform duration-300 ${isCurrentDay ? 'rotate-180' : ''}">
+                            <i class="fa-solid fa-chevron-down text-sm"></i>
+                        </div>
+                    </div>
+                    
+                    <div id="day-content-${dayId}" class="${isCurrentDay ? '' : 'hidden'} border-t border-slate-100 bg-slate-50/60 p-4 space-y-2.5">
+                        ${taskCount === 0 ? '<p class="text-xs text-slate-400 italic text-center py-2">Chưa có ca học nào trong ngày này.</p>' : ''}
+                        ${dayData.tasks.map((task, idx) => {
+                            const taskId = `d${dayId}_t${idx}`;
+                            const isChecked = appState.checkedTimetable[taskId] ? 'checked' : '';
+                            return `
+                                <div class="flex items-center justify-between gap-2 bg-white p-3 rounded-xl border border-slate-100 shadow-2xs hover:border-bio-200 transition">
+                                    <label class="flex items-start gap-3 cursor-pointer flex-1">
+                                        <input type="checkbox" onchange="toggleTimetableTask('${taskId}')" ${isChecked} 
+                                            class="mt-0.5 w-4 h-4 rounded text-bio-600 focus:ring-bio-500 border-slate-300">
+                                        <div class="text-xs text-slate-700 leading-relaxed font-medium ${isChecked ? 'line-through opacity-50' : ''}">
+                                            ${formatBioTaskDisplay(task)}
+                                        </div>
+                                    </label>
+                                    <div class="flex items-center gap-1 shrink-0">
+                                        <button onclick="openEditTaskModal(${dayId}, ${idx})" title="Sửa" class="text-slate-400 hover:text-bio-600 p-1 text-xs">
+                                            <i class="fa-regular fa-pen-to-square"></i>
+                                        </button>
+                                        <button onclick="deleteTimetableTask(${dayId}, ${idx})" title="Xóa" class="text-slate-400 hover:text-rose-500 p-1 text-xs">
+                                            <i class="fa-regular fa-trash-can"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+
+                        <button onclick="openAddTaskModal(${dayId})" class="w-full py-2.5 border border-dashed border-bio-300 hover:border-bio-500 text-bio-700 hover:bg-bio-50/70 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition mt-2">
+                            <i class="fa-solid fa-plus text-xs"></i> Thêm ca học Sinh cho ${dayData.dayName}
+                        </button>
+                    </div>
+                `;
+                container.appendChild(dayEl);
+            });
+
+            const todayPercent = todayTotal > 0 ? Math.round((todayCompleted / todayTotal) * 100) : 0;
+            document.getElementById('today-progress-bar').style.width = `${todayPercent}%`;
+            document.getElementById('today-progress-text').innerText = `${todayCompleted}/${todayTotal} (${todayPercent}%)`;
+        }
+
+        function toggleDay(dayId) {
+            const content = document.getElementById(`day-content-${dayId}`);
+            const chevron = document.getElementById(`chevron-d${dayId}`);
+            content.classList.toggle('hidden');
+            chevron.classList.toggle('rotate-180');
+        }
+
+        function toggleTimetableTask(taskId) {
+            if (appState.checkedTimetable[taskId]) {
+                delete appState.checkedTimetable[taskId];
+            } else {
+                appState.checkedTimetable[taskId] = true;
+                registerActivity();
+            }
+            saveState();
+            renderTimetable();
+        }
+
+        // THÊM / SỬA / XÓA TASK TRONG LỊCH 7 NGÀY
+        function openAddTaskModal(dayId) {
+            const day = appState.timetable.find(d => d.dayId === dayId);
+            document.getElementById('task-modal-title').innerText = `Thêm ca học Sinh - ${day ? day.dayName : ''}`;
+            document.getElementById('modal-day-id').value = dayId;
+            document.getElementById('modal-task-idx').value = -1;
+            document.getElementById('modal-task-time').value = '';
+            document.getElementById('modal-task-desc').value = '';
+            document.getElementById('task-modal').classList.remove('hidden');
+        }
+
+        function openEditTaskModal(dayId, idx) {
+            const day = appState.timetable.find(d => d.dayId === dayId);
+            if (!day || !day.tasks[idx]) return;
+            let raw = day.tasks[idx];
+
+            document.getElementById('task-modal-title').innerText = `Sửa ca học - ${day.dayName}`;
+            document.getElementById('modal-day-id').value = dayId;
+            document.getElementById('modal-task-idx').value = idx;
+
+            const tagMatch = raw.match(/^\[(.*?)\]\s*(.*)$/);
+            if (tagMatch) {
+                document.getElementById('modal-task-tag').value = tagMatch[1];
+                raw = tagMatch[2];
+            }
+
+            const colonIdx = raw.indexOf(': ');
+            if (colonIdx > 0 && colonIdx < 20) {
+                document.getElementById('modal-task-time').value = raw.substring(0, colonIdx);
+                document.getElementById('modal-task-desc').value = raw.substring(colonIdx + 2);
+            } else {
+                document.getElementById('modal-task-time').value = '';
+                document.getElementById('modal-task-desc').value = raw;
+            }
+            document.getElementById('task-modal').classList.remove('hidden');
+        }
+
+        function closeTaskModal() {
+            document.getElementById('task-modal').classList.add('hidden');
+        }
+
+        function saveTaskModal() {
+            const dayId = parseInt(document.getElementById('modal-day-id').value);
+            const idx = parseInt(document.getElementById('modal-task-idx').value);
+            const tag = document.getElementById('modal-task-tag').value;
+            const time = document.getElementById('modal-task-time').value.trim();
+            const desc = document.getElementById('modal-task-desc').value.trim();
+
+            if (!desc) {
+                showToast("Vui lòng nhập nội dung học tập!");
+                return;
+            }
+
+            const formattedTask = `[${tag}] ${time ? `${time}: ` : ''}${desc}`;
+            const day = appState.timetable.find(d => d.dayId === dayId);
+            if (!day) return;
+
+            if (idx === -1) {
+                day.tasks.push(formattedTask);
+            } else {
+                day.tasks[idx] = formattedTask;
+            }
+
+            closeTaskModal();
+            saveState();
+            renderTimetable();
+            showToast("Đã lưu ca học Sinh học!");
+        }
+
+        function deleteTimetableTask(dayId, idx) {
+            const day = appState.timetable.find(d => d.dayId === dayId);
+            if (!day) return;
+            day.tasks.splice(idx, 1);
+            delete appState.checkedTimetable[`d${dayId}_t${idx}`];
+            saveState();
+            renderTimetable();
+            showToast("Đã xóa ca học!");
+        }
+
+        function openResetConfirmModal() {
+            document.getElementById('reset-confirm-modal').classList.remove('hidden');
+        }
+
+        function closeResetConfirmModal() {
+            document.getElementById('reset-confirm-modal').classList.add('hidden');
+        }
+
+        function confirmResetTimetable() {
+            appState.timetable = JSON.parse(JSON.stringify(DEFAULT_BIO_TIMETABLE));
+            appState.checkedTimetable = {};
+            saveState();
+            renderTimetable();
+            closeResetConfirmModal();
+            showToast("Đã khôi phục thời khóa biểu Chuyên Sinh mẫu!");
+        }
+
+        // 8. RENDER LỘ TRÌNH 11 TUẦN
+        function renderRoadmap() {
+            const container = document.getElementById('roadmap-accordion-container');
+            container.innerHTML = '';
+
+            let totalTasks = 0;
+            let completedTasks = 0;
+
+            appState.roadmap.forEach((weekData, weekIdx) => {
+                let weekCompleted = 0;
+
+                weekData.tasks.forEach((_, idx) => {
+                    totalTasks++;
+                    if (appState.checkedRoadmap[`w${weekIdx}_t${idx}`]) {
+                        completedTasks++;
+                        weekCompleted++;
+                    }
+                });
+
+                const weekPercent = weekData.tasks.length > 0 ? Math.round((weekCompleted / weekData.tasks.length) * 100) : 0;
+                const weekEl = document.createElement('div');
+                weekEl.className = 'bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden transition';
+                weekEl.innerHTML = `
+                    <div onclick="toggleWeek(${weekIdx})" class="p-4 cursor-pointer flex justify-between items-center bg-white hover:bg-slate-50/80 transition select-none group">
+                        <div class="pr-2 flex-1">
+                            <div class="flex justify-between items-start mb-1">
+                                <h4 class="font-bold text-slate-800 text-sm">${weekData.title}</h4>
+                                <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation()">
+                                    <button onclick="openRoadmapWeekModal(${weekIdx})" class="text-slate-400 hover:text-bio-600 p-1 text-xs" title="Sửa thông tin chuyên đề"><i class="fa-regular fa-pen-to-square"></i></button>
+                                    <button onclick="deleteRoadmapWeek(${weekIdx})" class="text-slate-400 hover:text-rose-500 p-1 text-xs" title="Xóa chuyên đề"><i class="fa-regular fa-trash-can"></i></button>
+                                </div>
+                            </div>
+                            <p class="text-xs text-slate-500 leading-tight mb-2">${weekData.desc || ''}</p>
+                            <div class="flex items-center gap-2">
+                                <div class="w-32 bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                                    <div class="bg-teal-500 h-1.5 rounded-full transition-all" style="width: ${weekPercent}%"></div>
+                                </div>
+                                <span class="text-[10px] font-bold text-teal-700">${weekCompleted}/${weekData.tasks.length} (${weekPercent}%)</span>
+                            </div>
+                        </div>
+                        <div id="chevron-w${weekIdx}" class="text-slate-400 transition-transform duration-300 ml-2">
+                            <i class="fa-solid fa-chevron-down text-sm"></i>
+                        </div>
+                    </div>
+                    <div id="week-content-${weekIdx}" class="hidden border-t border-slate-100 bg-slate-50/50 p-4 space-y-2.5">
+                        ${weekData.tasks.length === 0 ? '<p class="text-xs text-slate-400 italic text-center py-2">Chưa có nhiệm vụ nào.</p>' : ''}
+                        ${weekData.tasks.map((task, idx) => {
+                            const taskId = `w${weekIdx}_t${idx}`;
+                            const isChecked = appState.checkedRoadmap[taskId] ? 'checked' : '';
+                            return `
+                                <div class="flex items-center justify-between gap-2 bg-white p-3 rounded-xl border border-slate-100 shadow-2xs hover:border-bio-200 transition">
+                                    <label class="flex items-start gap-3 cursor-pointer flex-1">
+                                        <input type="checkbox" onchange="toggleRoadmapTask('${taskId}')" ${isChecked} 
+                                            class="mt-0.5 w-4 h-4 rounded text-bio-600 focus:ring-bio-500 border-slate-300">
+                                        <span class="text-xs text-slate-700 leading-relaxed font-medium ${isChecked ? 'line-through text-slate-400' : ''}">
+                                            ${task}
+                                        </span>
+                                    </label>
+                                    <div class="flex items-center gap-1 shrink-0">
+                                        <button onclick="openRoadmapTaskModal(${weekIdx}, ${idx})" class="text-slate-400 hover:text-bio-600 p-1 text-xs"><i class="fa-regular fa-pen-to-square"></i></button>
+                                        <button onclick="deleteRoadmapTask(${weekIdx}, ${idx})" class="text-slate-400 hover:text-rose-500 p-1 text-xs"><i class="fa-regular fa-trash-can"></i></button>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                        <button onclick="openRoadmapTaskModal(${weekIdx})" class="w-full py-2.5 border border-dashed border-teal-300 hover:border-teal-500 text-teal-700 hover:bg-teal-50/70 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition mt-2">
+                            <i class="fa-solid fa-plus text-xs"></i> Thêm nhiệm vụ
+                        </button>
+                    </div>
+                `;
+                container.appendChild(weekEl);
+            });
+
+            // Nút Thêm Chuyên Đề Mới (dưới cùng)
+            const addWeekBtn = document.createElement('button');
+            addWeekBtn.onclick = () => openRoadmapWeekModal(-1);
+            addWeekBtn.className = "w-full py-3 bg-white border border-dashed border-bio-300 hover:border-bio-500 text-bio-700 hover:bg-bio-50 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition shadow-sm";
+            addWeekBtn.innerHTML = `<i class="fa-solid fa-folder-plus text-sm"></i> Thêm Tuần / Chuyên Đề Lộ Trình Mới`;
+            container.appendChild(addWeekBtn);
+
+            const overallPercent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+            document.getElementById('roadmap-progress-bar').style.width = `${overallPercent}%`;
+            document.getElementById('roadmap-progress-text').innerText = `${completedTasks}/${totalTasks} (${overallPercent}%)`;
+        }
+
+        function toggleWeek(weekIdx) {
+            document.getElementById(`week-content-${weekIdx}`).classList.toggle('hidden');
+            document.getElementById(`chevron-w${weekIdx}`).classList.toggle('rotate-180');
+        }
+
+        function toggleRoadmapTask(taskId) {
+            if (appState.checkedRoadmap[taskId]) {
+                delete appState.checkedRoadmap[taskId];
+            } else {
+                appState.checkedRoadmap[taskId] = true;
+                registerActivity();
+            }
+            saveState();
+            renderRoadmap();
+        }
+
+        // === CÁC HÀM XỬ LÝ CRUD CHO LỘ TRÌNH ===
+        function openRoadmapWeekModal(idx) {
+            document.getElementById('rm-week-idx').value = idx;
+            if (idx >= 0) {
+                const w = appState.roadmap[idx];
+                document.getElementById('rm-week-title').value = w.title;
+                document.getElementById('rm-week-desc').value = w.desc;
+                document.getElementById('rm-week-modal-title').innerText = "Sửa Chuyên Đề";
+            } else {
+                document.getElementById('rm-week-title').value = "";
+                document.getElementById('rm-week-desc').value = "";
+                document.getElementById('rm-week-modal-title').innerText = "Thêm Chuyên Đề Mới";
+            }
+            document.getElementById('roadmap-week-modal').classList.remove('hidden');
+        }
+
+        function closeRoadmapWeekModal() {
+            document.getElementById('roadmap-week-modal').classList.add('hidden');
+        }
+
+        function saveRoadmapWeekModal() {
+            const idx = parseInt(document.getElementById('rm-week-idx').value);
+            const title = document.getElementById('rm-week-title').value.trim();
+            const desc = document.getElementById('rm-week-desc').value.trim();
+
+            if (!title) {
+                showToast("Vui lòng nhập tên Tuần / Chuyên đề!");
+                return;
+            }
+
+            if (idx >= 0) {
+                appState.roadmap[idx].title = title;
+                appState.roadmap[idx].desc = desc;
+            } else {
+                appState.roadmap.push({ title: title, desc: desc, tasks: [] });
+            }
+            
+            closeRoadmapWeekModal();
+            saveState();
+            renderRoadmap();
+            showToast("Đã lưu thông tin chuyên đề!");
+        }
+
+        function deleteRoadmapWeek(idx) {
+            if (confirm("Bạn có chắc chắn muốn xóa toàn bộ tuần này và các nhiệm vụ bên trong không?")) {
+                appState.roadmap.splice(idx, 1);
+                
+                // Cập nhật lại Checkbox khi danh sách bị dịch chuyển
+                const newChecked = {};
+                for (let key in appState.checkedRoadmap) {
+                    const match = key.match(/^w(\d+)_t(\d+)$/);
+                    if (match) {
+                        const wIdx = parseInt(match[1]);
+                        const tIdx = parseInt(match[2]);
+                        if (wIdx < idx) {
+                            newChecked[key] = true;
+                        } else if (wIdx > idx) {
+                            newChecked[`w${wIdx - 1}_t${tIdx}`] = true;
+                        }
+                    }
+                }
+                appState.checkedRoadmap = newChecked;
+                saveState();
+                renderRoadmap();
+                showToast("Đã xóa tuần khỏi lộ trình!");
+            }
+        }
+
+        function openRoadmapTaskModal(weekIdx, taskIdx = -1) {
+            document.getElementById('rm-task-week-idx').value = weekIdx;
+            document.getElementById('rm-task-idx').value = taskIdx;
+            if (taskIdx >= 0) {
+                document.getElementById('rm-task-desc').value = appState.roadmap[weekIdx].tasks[taskIdx];
+                document.getElementById('rm-task-modal-title').innerText = "Sửa Nhiệm Vụ";
+            } else {
+                document.getElementById('rm-task-desc').value = "";
+                document.getElementById('rm-task-modal-title').innerText = "Thêm Nhiệm Vụ Mới";
+            }
+            document.getElementById('roadmap-task-modal').classList.remove('hidden');
+        }
+
+        function closeRoadmapTaskModal() {
+            document.getElementById('roadmap-task-modal').classList.add('hidden');
+        }
+
+        function saveRoadmapTaskModal() {
+            const weekIdx = parseInt(document.getElementById('rm-task-week-idx').value);
+            const taskIdx = parseInt(document.getElementById('rm-task-idx').value);
+            const desc = document.getElementById('rm-task-desc').value.trim();
+
+            if (!desc) {
+                showToast("Vui lòng nhập nội dung nhiệm vụ!");
+                return;
+            }
+
+            if (taskIdx >= 0) {
+                appState.roadmap[weekIdx].tasks[taskIdx] = desc;
+            } else {
+                appState.roadmap[weekIdx].tasks.push(desc);
+            }
+            
+            closeRoadmapTaskModal();
+            saveState();
+            renderRoadmap();
+            showToast("Đã lưu nhiệm vụ mới!");
+        }
+
+        function deleteRoadmapTask(weekIdx, taskIdx) {
+            appState.roadmap[weekIdx].tasks.splice(taskIdx, 1);
+            
+            // Cập nhật lại Checkbox khi một task bị xóa (đẩy các task dưới lên)
+            const newChecked = {};
+            for (let key in appState.checkedRoadmap) {
+                const match = key.match(/^w(\d+)_t(\d+)$/);
+                if (match) {
+                    const wIdx = parseInt(match[1]);
+                    const tIdx = parseInt(match[2]);
+                    if (wIdx === weekIdx) {
+                        if (tIdx < taskIdx) {
+                            newChecked[key] = true;
+                        } else if (tIdx > taskIdx) {
+                            newChecked[`w${wIdx}_t${tIdx - 1}`] = true;
+                        }
+                    } else {
+                        newChecked[key] = true;
+                    }
+                }
+            }
+            appState.checkedRoadmap = newChecked;
+            saveState();
+            renderRoadmap();
+            showToast("Đã xóa nhiệm vụ!");
+        }
+
+        // 9. BỘ CÔNG CỤ TÍNH NHANH SINH HỌC (ADN & HARDY-WEINBERG)
+        function calculateDNA() {
+            let N = parseFloat(document.getElementById('calc-dna-n').value);
+            let L = parseFloat(document.getElementById('calc-dna-l').value);
+            let inputA = parseFloat(document.getElementById('calc-dna-a').value);
+            let inputH = parseFloat(document.getElementById('calc-dna-h').value);
+
+            if (isNaN(N) && !isNaN(L) && L > 0) {
+                N = Math.round((L * 2) / 3.4);
+            } else if (!isNaN(N) && N > 0) {
+                L = (N / 2) * 3.4;
+            } else {
+                showToast("Vui lòng nhập Tổng số Nu (N) hoặc Chiều dài L (Å)!");
+                return;
+            }
+
+            let A = 0, G = 0, H = 0;
+            if (!isNaN(inputA) && inputA > 0) {
+                if (inputA < 50) {
+                    // Người dùng nhập %A
+                    A = Math.round((inputA / 100) * N);
+                } else {
+                    A = Math.round(inputA);
+                }
+                G = (N / 2) - A;
+                H = 2 * A + 3 * G;
+            } else if (!isNaN(inputH) && inputH > 0) {
+                // Giải hệ: 2A + 2G = N và 2A + 3G = H => G = H - N
+                H = Math.round(inputH);
+                G = H - N;
+                A = (N / 2) - G;
+            } else {
+                // Nếu chỉ nhập N hoặc L thì tính các thông số kích thước
+                A = -1;
+            }
+
+            const C = N / 20;
+            const M = N * 300;
+            const HT = N - 2; // Liên kết phosphodiester giữa các Nu trên 2 mạch
+
+            const box = document.getElementById('dna-result-box');
+            box.classList.remove('hidden');
+
+            let nuDetailHtml = '';
+            if (A >= 0 && G >= 0) {
+                const pA = ((A / N) * 100).toFixed(1);
+                const pG = ((G / N) * 100).toFixed(1);
+                nuDetailHtml = `
+                    <div class="pt-1.5 mt-1.5 border-t border-bio-200 grid grid-cols-2 gap-1 font-semibold text-bio-900">
+                        <div>• A = T = <b>${A}</b> Nu (${pA}%)</div>
+                        <div>• G = X = <b>${G}</b> Nu (${pG}%)</div>
+                        <div class="col-span-2">• Liên kết Hydrogen (H = 2A + 3G): <b>${H}</b> liên kết</div>
+                    </div>
+                `;
+            } else if (A < -0.5 && !isNaN(inputH)) {
+                nuDetailHtml = `<div class="text-rose-600 font-semibold mt-1">⚠️ Số liên kết H không khớp với tổng N (cần N ≤ H ≤ 1.5N).</div>`;
+            }
+
+            box.innerHTML = `
+                <div class="grid grid-cols-2 gap-1">
+                    <div>• Tổng số Nu (N): <b>${N}</b></div>
+                    <div>• Chiều dài (L): <b>${L.toFixed(1)} Å</b></div>
+                    <div>• Chu kỳ xoắn (C): <b>${C.toFixed(1)}</b></div>
+                    <div>• Khối lượng (M): <b>${M.toLocaleString('vi-VN')} đvC</b></div>
+                    <div class="col-span-2">• Liên kết hóa trị nối giữa các Nu (N - 2): <b>${HT}</b></div>
+                </div>
+                ${nuDetailHtml}
+            `;
+        }
+
+        function clearDNACalc() {
+            ['calc-dna-n', 'calc-dna-l', 'calc-dna-a', 'calc-dna-h'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('dna-result-box').classList.add('hidden');
+        }
+
+        function calculateHW() {
+            let qInput = parseFloat(document.getElementById('calc-hw-q').value);
+            let aaInput = parseFloat(document.getElementById('calc-hw-aa').value);
+
+            let q = 0;
+            if (!isNaN(qInput) && qInput >= 0 && qInput <= 1) {
+                q = qInput;
+            } else if (!isNaN(aaInput) && aaInput >= 0 && aaInput <= 100) {
+                q = Math.sqrt(aaInput / 100);
+            } else {
+                showToast("Hãy nhập tần số q (0 đến 1) hoặc % kiểu hình lặn aa (0 đến 100)!");
+                return;
+            }
+
+            const p = 1 - q;
+            const AA = (p * p * 100).toFixed(2);
+            const Aa = (2 * p * q * 100).toFixed(2);
+            const aa = (q * q * 100).toFixed(2);
+            const carrierInDom = (p * p + 2 * p * q) > 0 ? ((2 * p * q) / (p * p + 2 * p * q) * 100).toFixed(2) : 0;
+
+            const box = document.getElementById('hw-result-box');
+            box.classList.remove('hidden');
+            box.innerHTML = `
+                <div class="font-semibold text-teal-900">• Tần số alen: <b>p(A) = ${p.toFixed(3)}</b> | <b>q(a) = ${q.toFixed(3)}</b></div>
+                <div>• Cấu trúc cân bằng: <b>${AA}% AA : ${Aa}% Aa : ${aa}% aa</b></div>
+                <div class="text-[11px] text-teal-800 pt-1 border-t border-teal-200">
+                    💡 <i>Mẹo giải phả hệ:</i> Xác suất một cá thể có kiểu hình trội mang gen dị hợp (Aa) trong quần thể này là <b>2pq / (p² + 2pq) = ${carrierInDom}%</b>.
+                </div>
+            `;
+        }
+
+        function clearHWCalc() {
+            document.getElementById('calc-hw-q').value = '';
+            document.getElementById('calc-hw-aa').value = '';
+            document.getElementById('hw-result-box').classList.add('hidden');
+        }
+
+        // 10. HỆ THỐNG FLASHCARD LẬT THẺ
+        function renderFlashcard() {
+            if (appState.flashcards.length === 0) {
+                document.getElementById('fc-category').innerText = "Trống";
+                document.getElementById('fc-counter').innerText = "0 / 0";
+                document.getElementById('fc-front').innerText = "Chưa có thẻ Flashcard nào. Hãy bấm nút Thêm thẻ mới!";
+                document.getElementById('fc-back').innerText = "";
+                return;
+            }
+
+            if (currentFcIndex >= appState.flashcards.length) currentFcIndex = 0;
+            if (currentFcIndex < 0) currentFcIndex = appState.flashcards.length - 1;
+
+            const card = appState.flashcards[currentFcIndex];
+            document.getElementById('flashcard-inner').classList.remove('rotate-y-180');
+            document.getElementById('fc-category').innerText = card.category || "Chuyên Sinh";
+            document.getElementById('fc-counter').innerText = `${currentFcIndex + 1} / ${appState.flashcards.length}`;
+            document.getElementById('fc-front').innerText = card.front;
+            document.getElementById('fc-back').innerText = card.back;
+        }
+
+        function flipCurrentCard() {
+            document.getElementById('flashcard-inner').classList.toggle('rotate-y-180');
+        }
+
+        function nextFlashcard() {
+            currentFcIndex++;
+            renderFlashcard();
+        }
+
+        function prevFlashcard() {
+            currentFcIndex--;
+            renderFlashcard();
+        }
+
+        function openFlashcardModal() {
+            document.getElementById('fc-input-cat').value = '';
+            document.getElementById('fc-input-front').value = '';
+            document.getElementById('fc-input-back').value = '';
+            document.getElementById('flashcard-modal').classList.remove('hidden');
+        }
+
+        function closeFlashcardModal() {
+            document.getElementById('flashcard-modal').classList.add('hidden');
+        }
+
+        function saveNewFlashcard() {
+            const cat = document.getElementById('fc-input-cat').value.trim() || "Chuyên Sinh";
+            const front = document.getElementById('fc-input-front').value.trim();
+            const back = document.getElementById('fc-input-back').value.trim();
+
+            if (!front || !back) {
+                showToast("Vui lòng nhập đầy đủ câu hỏi mặt trước và đáp án mặt sau!");
+                return;
+            }
+
+            appState.flashcards.push({ category: cat, front, back });
+            currentFcIndex = appState.flashcards.length - 1;
+            saveState();
+            renderFlashcard();
+            closeFlashcardModal();
+            showToast("Đã thêm thẻ Flashcard Sinh học mới!");
+        }
+
+        function deleteCurrentFlashcard(e) {
+            e.stopPropagation();
+            if (appState.flashcards.length <= 1) {
+                showToast("Cần giữ lại ít nhất 1 thẻ Flashcard!");
+                return;
+            }
+            appState.flashcards.splice(currentFcIndex, 1);
+            saveState();
+            renderFlashcard();
+            showToast("Đã xóa thẻ Flashcard!");
+        }
+
+        // 11. NHẬT KÝ GIỜ HỌC & ĐIỂM THI THỬ (/20)
+        function addStudyLog() {
+            const date = document.getElementById('study-date').value;
+            const planHours = parseFloat(document.getElementById('plan-hours').value) || 0;
+            const actualHours = parseFloat(document.getElementById('actual-hours').value);
+            const topic = document.getElementById('study-topic').value.trim();
+
+            if (!date || isNaN(actualHours) || actualHours <= 0 || !topic) {
+                showToast("Vui lòng điền ngày, số giờ thực tế học và chuyên đề Sinh!");
+                return;
+            }
+
+            appState.studyLogs.unshift({
+                id: Date.now(),
+                date,
+                planHours,
+                actualHours,
+                topic
+            });
+
+            document.getElementById('plan-hours').value = '';
+            document.getElementById('actual-hours').value = '';
+            document.getElementById('study-topic').value = '';
+
+            registerActivity();
+            saveState();
+            renderLogsHistory();
+            showToast("Đã lưu nhật ký học Sinh học!");
+        }
+
+        function addExamLog() {
+            const name = document.getElementById('exam-name').value.trim();
+            const score = parseFloat(document.getElementById('exam-score').value);
+            const duration = parseInt(document.getElementById('exam-duration').value) || 150;
+
+            if (!name || isNaN(score) || score < 0 || score > 20) {
+                showToast("Vui lòng nhập tên đề thi và điểm số hợp lệ (thang điểm 20)!");
+                return;
+            }
+
+            appState.examLogs.unshift({
+                id: Date.now(),
+                date: getLocalDateStr(new Date()),
+                name,
+                score,
+                duration
+            });
+
+            document.getElementById('exam-name').value = '';
+            document.getElementById('exam-score').value = '';
+
+            registerActivity();
+            saveState();
+            renderLogsHistory();
+            showToast("Đã lưu điểm thi thử HSG!");
+        }
+
+        function deleteLogItem(type, id) {
+            if (type === 'study') {
+                appState.studyLogs = appState.studyLogs.filter(i => i.id !== id);
+            } else {
+                appState.examLogs = appState.examLogs.filter(i => i.id !== id);
+            }
+            saveState();
+            renderLogsHistory();
+        }
+
+        function renderLogsHistory() {
+            const container = document.getElementById('logs-history-list');
+            container.innerHTML = '';
+
+            const combined = [
+                ...appState.studyLogs.map(s => ({ ...s, itemType: 'study' })),
+                ...appState.examLogs.map(e => ({ ...e, itemType: 'exam' }))
+            ].sort((a, b) => b.id - a.id);
+
+            if (combined.length === 0) {
+                container.innerHTML = `<p class="text-slate-400 italic text-center py-4">Chưa có nhật ký giờ học hoặc điểm thi thử nào.</p>`;
+                return;
+            }
+
+            combined.forEach(item => {
+                const el = document.createElement('div');
+                el.className = 'p-3 rounded-xl border border-slate-100 flex justify-between items-center bg-slate-50/70';
+
+                if (item.itemType === 'study') {
+                    const diff = (item.actualHours - (item.planHours || 0)).toFixed(1);
+                    const diffBadge = item.planHours > 0
+                        ? (diff >= 0
+                            ? `<span class="text-[10px] bg-bio-100 text-bio-800 px-2 py-0.5 rounded-full font-bold">Đạt KH (+${diff}h)</span>`
+                            : `<span class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold">Hụt ${Math.abs(diff)}h</span>`)
+                        : '';
+
+                    el.innerHTML = `
+                        <div>
+                            <div class="flex items-center gap-2 font-bold text-bio-700 flex-wrap">
+                                <span><i class="fa-regular fa-clock mr-1"></i>Thực tế: ${item.actualHours}h ${item.planHours > 0 ? `/ KH: ${item.planHours}h` : ''}</span>
+                                ${diffBadge}
+                            </div>
+                            <div class="text-slate-700 mt-1 font-medium">${item.topic}</div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">${item.date}</div>
+                        </div>
+                        <button onclick="deleteLogItem('study', ${item.id})" class="text-slate-400 hover:text-rose-500 p-1.5">
+                            <i class="fa-regular fa-trash-can"></i>
+                        </button>
+                    `;
+                } else {
+                    el.innerHTML = `
+                        <div>
+                            <div class="flex items-center gap-2 font-bold text-amber-700">
+                                <i class="fa-solid fa-trophy"></i> Đề thi thử: ${item.score} / 20 điểm
+                                <span class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">${item.duration || 150} phút</span>
+                            </div>
+                            <div class="text-slate-700 mt-1 font-medium">${item.name}</div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">${item.date}</div>
+                        </div>
+                        <button onclick="deleteLogItem('exam', ${item.id})" class="text-slate-400 hover:text-rose-500 p-1.5">
+                            <i class="fa-regular fa-trash-can"></i>
+                        </button>
+                    `;
+                }
+                container.appendChild(el);
+            });
+        }
+
+        // 12. SỔ TAY LỖI SAI & PHÂN TÍCH ĐIỂM YẾU CHUYÊN SINH
+        function addErrorLog() {
+            const entryType = document.getElementById('error-type').value;
+            const category = document.getElementById('error-category').value;
+            const desc = document.getElementById('error-desc').value.trim();
+            const fix = document.getElementById('error-fix').value.trim();
+
+            if (!desc || !fix) {
+                showToast("Vui lòng điền đầy đủ mô tả và hướng khắc phục!");
+                return;
+            }
+
+            appState.errorLogs.unshift({
+                id: Date.now(),
+                entryType,
+                category,
+                desc,
+                fix,
+                date: new Date().toLocaleDateString('vi-VN')
+            });
+
+            document.getElementById('error-desc').value = '';
+            document.getElementById('error-fix').value = '';
+
+            saveState();
+            renderErrors();
+            showToast("Đã lưu vào Sổ tay khắc phục!");
+        }
+
+        function deleteErrorLog(id) {
+            appState.errorLogs = appState.errorLogs.filter(item => item.id !== id);
+            saveState();
+            renderErrors();
+        }
+
+        function renderErrors() {
+            const container = document.getElementById('error-cards-container');
+            const weaknessBars = document.getElementById('weakness-bars');
+            container.innerHTML = '';
+            weaknessBars.innerHTML = '';
+
+            if (appState.errorLogs.length === 0) {
+                weaknessBars.innerHTML = `<p class="text-slate-400 italic text-xs">Chưa có dữ liệu lỗi sai. Hãy thêm lỗi sai sau mỗi lần giải đề để hệ thống chỉ ra chuyên đề cần ôn gấp!</p>`;
+                container.innerHTML = `<div class="bg-white p-6 rounded-2xl text-center border border-slate-100 text-slate-400 text-xs">
+                    <i class="fa-solid fa-seedling text-3xl text-bio-400 mb-2 block"></i>
+                    Sổ tay đang trống. Mỗi lỗi sai được ghi lại và sửa triệt để là một bước tiến gần hơn tới Giải Nhất!
+                </div>`;
+                return;
+            }
+
+            // Thống kê tần suất lỗi theo chuyên đề Sinh học
+            const counts = {};
+            appState.errorLogs.forEach(e => {
+                counts[e.category] = (counts[e.category] || 0) + 1;
+            });
+
+            const sortedCats = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+            const totalErrors = appState.errorLogs.length;
+
+            sortedCats.forEach(([cat, count]) => {
+                const pct = Math.round((count / totalErrors) * 100);
+                weaknessBars.innerHTML += `
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-[11px] font-semibold">
+                            <span class="text-slate-700">${cat}</span>
+                            <span class="text-rose-600 font-bold">${count} mục (${pct}%)</span>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                            <div class="bg-rose-500 h-1.5 rounded-full" style="width: ${pct}%"></div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            appState.errorLogs.forEach((err) => {
+                const isDelay = err.entryType === 'delay';
+                const card = document.createElement('div');
+                card.className = 'bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-2 relative';
+                card.innerHTML = `
+                    <div class="flex justify-between items-start gap-2">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="${isDelay ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-rose-50 text-rose-700 border-rose-200'} text-[10px] font-bold px-2 py-0.5 rounded-md border">
+                                ${isDelay ? '⏳ Việc bị Delay' : '🐞 Lỗi sai kiến thức'}
+                            </span>
+                            <span class="bg-slate-100 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-md">
+                                ${err.category}
+                            </span>
+                            <span class="text-[10px] text-slate-400">${err.date || ''}</span>
+                        </div>
+                        <button onclick="deleteErrorLog(${err.id})" title="Đã khắc phục xong / Xóa" class="text-slate-300 hover:text-bio-600 text-xs p-1">
+                            <i class="fa-solid fa-check-double"></i>
+                        </button>
+                    </div>
+                    <div>
+                        <span class="text-[11px] font-bold text-rose-600 block">${isDelay ? 'Công việc & Lý do trễ:' : 'Lỗi nhầm lẫn:'}</span>
+                        <p class="text-xs text-slate-700 leading-relaxed font-medium">${err.desc}</p>
+                    </div>
+                    <div class="bg-bio-50/70 p-2.5 rounded-xl border border-bio-100">
+                        <span class="text-[11px] font-bold text-bio-800 block">${isDelay ? 'Lịch học bù:' : 'Cơ chế chuẩn / Cách khắc phục:'}</span>
+                        <p class="text-xs text-bio-950 leading-relaxed font-medium">${err.fix}</p>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // 13. CẬP NHẬT 4 THẺ DASHBOARD
+        function updateDashboardMetrics() {
+            const totalHours = appState.studyLogs.reduce((sum, item) => sum + (item.actualHours || 0), 0);
+            document.getElementById('stat-total-hours').innerText = `${totalHours.toFixed(1)} h`;
+
+            const completedCount = Object.keys(appState.checkedTimetable).length + Object.keys(appState.checkedRoadmap).length;
+            document.getElementById('stat-completed-tasks').innerText = `${completedCount} mục`;
+
+            if (appState.examLogs.length > 0) {
+                const totalScore = appState.examLogs.reduce((sum, item) => sum + (item.score || 0), 0);
+                const avg = (totalScore / appState.examLogs.length).toFixed(2);
+                document.getElementById('stat-avg-score').innerText = `${avg}/20`;
+            } else {
+                document.getElementById('stat-avg-score').innerText = `-/20`;
+            }
+
+            document.getElementById('stat-error-count').innerText = `${appState.errorLogs.length} mục`;
+        }
+
+        // 14. ĐỒNG HỒ POMODORO (CÓ CHẾ ĐỘ LUYỆN ĐỀ 150 PHÚT & ÂM BÁO)
+        let pomoTime = 45 * 60;
+        let pomoInterval = null;
+        let isPomoRunning = false;
+        let currentPomoMode = 'focus';
+
+        function playBeepSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, ctx.currentTime);
+                gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.4);
+            } catch (e) {}
+        }
+
+        function updatePomoDisplay() {
+            const m = Math.floor(pomoTime / 60).toString().padStart(2, '0');
+            const s = (pomoTime % 60).toString().padStart(2, '0');
+            document.getElementById('pomo-time').innerText = `${m}:${s}`;
+            if (isPomoRunning) {
+                document.title = `(${m}:${s}) BioPlanner`;
+            }
+        }
+
+        function setPomoMode(mode) {
+            currentPomoMode = mode;
+            pausePomo();
+            ['focus', 'exam', 'break'].forEach(m => {
+                document.getElementById(`btn-pomo-${m}`).className = "text-[10px] font-bold py-1 rounded-md text-slate-500 hover:bg-slate-100 transition";
+            });
+
+            if (mode === 'focus') {
+                pomoTime = 45 * 60;
+                document.getElementById('btn-pomo-focus').className = "text-[10px] font-bold py-1 rounded-md bg-bio-100 text-bio-800 transition";
+            } else if (mode === 'exam') {
+                pomoTime = 150 * 60;
+                document.getElementById('btn-pomo-exam').className = "text-[10px] font-bold py-1 rounded-md bg-amber-100 text-amber-800 transition";
+            } else {
+                pomoTime = 5 * 60;
+                document.getElementById('btn-pomo-break').className = "text-[10px] font-bold py-1 rounded-md bg-teal-100 text-teal-800 transition";
+            }
+            updatePomoDisplay();
+        }
+
+        function startPomo() {
+            if (isPomoRunning) return;
+            isPomoRunning = true;
+            document.getElementById('btn-pomo-start').classList.add('hidden');
+            document.getElementById('btn-pomo-pause').classList.remove('hidden');
+
+            pomoInterval = setInterval(() => {
+                if (pomoTime > 0) {
+                    pomoTime--;
+                    updatePomoDisplay();
+                } else {
+                    pausePomo();
+                    playBeepSound();
+                    showToast(currentPomoMode === 'break' ? "Hết giờ nghỉ! Tiếp tục chinh phục Sinh học nào!" : "🎉 Hoàn thành phiên tập trung! Hãy nghỉ mắt 5 phút nhé.");
+                }
+            }, 1000);
+        }
+
+        function pausePomo() {
+            isPomoRunning = false;
+            clearInterval(pomoInterval);
+            document.getElementById('btn-pomo-start').classList.remove('hidden');
+            document.getElementById('btn-pomo-pause').classList.add('hidden');
+            document.title = "BioPlanner 2027 - Chuyên Sinh";
+        }
+
+        function resetPomo() {
+            setPomoMode(currentPomoMode);
+        }
+
+        function togglePomodoro() {
+            const content = document.getElementById('pomo-content');
+            const icon = document.getElementById('pomo-toggle-icon');
+            content.classList.toggle('hidden');
+            icon.className = content.classList.contains('hidden')
+                ? "fa-solid fa-chevron-up text-xs"
+                : "fa-solid fa-chevron-down text-xs";
+        }
+
+        // 15. SAO LƯU & KHÔI PHỤC JSON
+        function openBackupModal() {
+            document.getElementById('backup-modal').classList.remove('hidden');
+        }
+
+        function closeBackupModal() {
+            document.getElementById('backup-modal').classList.add('hidden');
+        }
+
+        function exportBackupJSON() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
+            const dlAnchor = document.createElement('a');
+            dlAnchor.setAttribute("href", dataStr);
+            dlAnchor.setAttribute("download", `bioplanner_backup_${getLocalDateStr(new Date())}.json`);
+            document.body.appendChild(dlAnchor);
+            dlAnchor.click();
+            dlAnchor.remove();
+            showToast("Đã tải file sao lưu thành công!");
+        }
+
+        function importBackupJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (imported && imported.timetable) {
+                        appState = imported;
+                        saveState();
+                        renderStreak();
+                        renderGoal();
+                        renderTimetable();
+                        renderRoadmap();
+                        renderFlashcard();
+                        renderLogsHistory();
+                        renderErrors();
+                        closeBackupModal();
+                        showToast("Khôi phục dữ liệu thành công!");
+                    } else {
+                        showToast("File không đúng định dạng BioPlanner!");
+                    }
+                } catch (err) {
+                    showToast("Lỗi đọc file sao lưu!");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // UI HELPERS
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 2800);
+        }
+
+        function openInstallGuide() {
+            document.getElementById('install-modal').classList.remove('hidden');
+        }
+
+        function closeInstallGuide() {
+            document.getElementById('install-modal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
