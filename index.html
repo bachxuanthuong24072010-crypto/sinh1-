@@ -11,9 +11,14 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="application-name" content="BioPlanner">
+    <meta name="apple-mobile-web-app-title" content="BioPlanner 2027">
     
-    <!-- Nhúng PWA Manifest (Data URI) để app chạy độc lập (Standalone) -->
-    <link rel="manifest" href='data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22BioPlanner%202027%22%2C%22short_name%22%3A%22BioPlanner%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23ecfdf5%22%2C%22theme_color%22%3A%22%23059669%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fcdn-icons-png.flaticon.com%2F512%2F295%2F295282.png%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fpng%22%2C%22purpose%22%3A%22any%20maskable%22%7D%5D%7D'>
+    <!-- Cấu hình Icon Ứng dụng từ file ảnh "Cụm minh họa học sinh học đáng yêu.png" -->
+    <link rel="icon" type="image/png" sizes="64x64" href="Cụm minh họa học sinh học đáng yêu.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="Cụm minh họa học sinh học đáng yêu.png">
+    
+    <!-- Nhúng PWA Manifest với icon "Cụm minh họa học sinh học đáng yêu.png" để chạy độc lập (Standalone) -->
+    <link rel="manifest" href='data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22BioPlanner%202027%20-%20S%E1%BB%95%20Tay%20Chuy%C3%AAn%20Sinh%22%2C%22short_name%22%3A%22BioPlanner%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230f172a%22%2C%22theme_color%22%3A%22%23059669%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22C%E1%BB%A5m%20minh%20h%E1%BB%8Da%20h%E1%BB%8Dc%20sinh%20h%E1%BB%8Dc%20%C4%91%C3%A1ng%20y%C3%AAu.png%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fpng%22%2C%22purpose%22%3A%22any%20maskable%22%7D%2C%7B%22src%22%3A%22C%E1%BB%A5m%20minh%20h%E1%BB%8Da%20h%E1%BB%8Dc%20sinh%20h%E1%BB%8Dc%20%C4%91%C3%A1ng%20y%C3%AAu.png%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fpng%22%2C%22purpose%22%3A%22any%20maskable%22%7D%5D%7D'>
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -67,12 +72,42 @@
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased pb-28 md:pb-12">
 
+    <!-- PWA App Loading Splash Screen (Hiển thị ngay tức khắc khi mở web/app) -->
+    <div id="pwa-app-loader" class="fixed inset-0 z-[99999] bg-slate-900 flex flex-col items-center justify-center p-6 text-center select-none transition-opacity duration-300">
+        <div class="relative w-28 h-28 mb-5 animate-pulse bg-white p-2 rounded-3xl shadow-2xl border-2 border-bio-400">
+            <img src="Cụm minh họa học sinh học đáng yêu.png" onerror="this.src='https://cdn-icons-png.flaticon.com/512/295/295282.png'" alt="BioPlanner 2027" class="w-full h-full object-contain drop-shadow-md rounded-2xl">
+        </div>
+        <div class="flex items-center gap-2.5 text-amber-400 font-black text-base sm:text-lg tracking-wide">
+            <i class="fa-solid fa-circle-notch fa-spin text-xl text-bio-400"></i>
+            <span>BIOPLANNER 2027</span>
+        </div>
+        <p class="text-xs text-slate-300 mt-2 font-medium max-w-xs">Đang nạp lộ trình 11 tuần & sổ tay Chuyên Sinh...</p>
+    </div>
+    <script>
+        window.addEventListener('load', () => {
+            const loader = document.getElementById('pwa-app-loader');
+            if (loader) {
+                loader.style.opacity = '0';
+                loader.style.pointerEvents = 'none';
+                setTimeout(() => loader.remove(), 350);
+            }
+        });
+        setTimeout(() => {
+            const loader = document.getElementById('pwa-app-loader');
+            if (loader) {
+                loader.style.opacity = '0';
+                loader.style.pointerEvents = 'none';
+                setTimeout(() => loader.remove(), 350);
+            }
+        }, 2200);
+    </script>
+
     <!-- Top Navigation Header -->
     <header class="sticky top-0 z-30 bg-bio-700 text-white shadow-md">
         <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center text-white text-xl font-bold shadow-inner">
-                    <i class="fa-solid fa-dna"></i>
+                <div class="w-10 h-10 rounded-xl bg-white p-1 flex items-center justify-center shadow-inner overflow-hidden shrink-0">
+                    <img src="Cụm minh họa học sinh học đáng yêu.png" onerror="this.outerHTML='<i class=\'fa-solid fa-dna text-bio-700 text-xl\'></i>'" alt="BioPlanner Icon" class="w-full h-full object-contain rounded-lg">
                 </div>
                 <div>
                     <div class="flex items-center gap-2">
@@ -97,7 +132,7 @@
                     <i class="fa-solid fa-bullseye"></i>
                     <span class="hidden sm:inline">Mục tiêu</span>
                 </button>
-                <button onclick="openInstallGuide()" class="text-xs bg-white/20 hover:bg-white/30 px-2.5 py-1.5 rounded-lg flex items-center gap-1 backdrop-blur transition">
+                <button onclick="installPWA()" class="text-xs bg-white/20 hover:bg-white/30 px-2.5 py-1.5 rounded-lg flex items-center gap-1 backdrop-blur transition font-bold">
                     <i class="fa-solid fa-mobile-screen-button"></i>
                     <span class="hidden md:inline">Cài App</span>
                 </button>
@@ -107,6 +142,53 @@
 
     <!-- Main Container -->
     <main class="max-w-4xl mx-auto px-4 pt-4 space-y-5">
+
+        <!-- BANNER CÀI ĐẶT APP DÀNH RIÊNG CHO MÁY TÍNH (PC / LAPTOP - ẨN TRÊN ĐIỆN THOẠI & TỰ ẨN KHI ĐÃ CÀI) -->
+        <div id="pwa-install-banner-desktop" class="hidden sm:flex bg-gradient-to-r from-bio-600 via-teal-600 to-emerald-700 rounded-2xl p-3.5 text-white shadow-md items-center justify-between transition">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 bg-white rounded-xl p-1 flex items-center justify-center shrink-0 shadow-sm">
+                    <img src="Cụm minh họa học sinh học đáng yêu.png" onerror="this.outerHTML='💻'" alt="App Icon" class="w-full h-full object-contain rounded-lg">
+                </div>
+                <div>
+                    <h4 class="text-sm font-extrabold flex items-center gap-2">
+                        <span>Cài đặt App BioPlanner 2027</span>
+                        <span class="bg-amber-400 text-amber-950 text-[10px] px-2 py-0.5 rounded-full font-black">Offline 100%</span>
+                    </h4>
+                    <p class="text-[11px] text-bio-100 mt-0.5">Bấm để tải và cài đặt trực tiếp Sổ Tay Chuyên Sinh về màn hình Desktop của máy tính!</p>
+                </div>
+            </div>
+            <button onclick="installPWA()" class="bg-white text-bio-700 hover:bg-bio-50 font-extrabold text-xs px-4 py-2 rounded-xl shadow-sm active:scale-95 transition shrink-0 cursor-pointer flex items-center gap-1.5">
+                <i class="fa-solid fa-download"></i>
+                <span>Cài ngay</span>
+            </button>
+        </div>
+
+        <!-- BANNER HƯỚNG DẪN CÀI ĐẶT APP DÀNH RIÊNG CHO ĐIỆN THOẠI (ẨN TRÊN MÁY TÍNH & TỰ ẨN KHI ĐÃ CÀI) -->
+        <div id="pwa-install-banner-mobile" class="sm:hidden bg-gradient-to-r from-bio-600 via-teal-600 to-emerald-700 rounded-2xl p-3 text-white shadow-lg flex items-center justify-between gap-2.5 transition">
+            <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-10 h-10 rounded-xl bg-white p-1 flex items-center justify-center shrink-0 shadow-inner">
+                    <img src="Cụm minh họa học sinh học đáng yêu.png" onerror="this.outerHTML='📲'" alt="App Icon" class="w-full h-full object-contain rounded-lg">
+                </div>
+                <div class="min-w-0 flex-1">
+                    <h4 class="font-extrabold text-xs text-white flex items-center gap-1.5 truncate">
+                        <span>Cài App BioPlanner</span>
+                        <span class="bg-amber-400 text-amber-950 text-[9px] px-1.5 py-0.2 rounded-full font-black">Full MH</span>
+                    </h4>
+                    <p class="text-[10px] text-bio-100 font-medium truncate mt-0.5">
+                        Mở tức thì, dùng mượt cả khi không có mạng
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+                <button type="button" onclick="installPWA()" class="bg-white text-bio-700 hover:bg-bio-50 active:scale-95 text-xs font-extrabold px-3 py-1.5 rounded-xl shadow-xs transition flex items-center gap-1">
+                    <i class="fa-solid fa-download text-[10px]"></i>
+                    <span>Cài ngay</span>
+                </button>
+                <button type="button" onclick="dismissMobileInstallBanner()" class="w-7 h-7 rounded-lg hover:bg-white/20 text-white/80 hover:text-white flex items-center justify-center transition text-xs" title="Đóng">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        </div>
 
         <!-- Banner Dashboard & Đếm ngược Kỳ thi HSG Sinh -->
         <div class="bg-gradient-to-r from-bio-700 via-bio-600 to-teal-700 rounded-2xl p-4 text-white shadow-lg relative overflow-hidden">
@@ -544,26 +626,112 @@
         </div>
     </div>
 
-    <!-- 6. Modal Hướng Dẫn Cài App -->
-    <div id="install-modal" class="fixed inset-0 bg-black/60 z-50 flex items-end md:items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl max-w-md w-full p-5 space-y-4">
-            <div class="flex justify-between items-center border-b pb-2">
-                <h3 class="font-bold text-base text-slate-800">Thêm BioPlanner vào Màn hình chính</h3>
-                <button onclick="closeInstallGuide()" class="text-slate-400 hover:text-slate-600 text-lg">
+    <!-- 6. POPUP MODAL HƯỚNG DẪN CÀI ĐẶT APP DI ĐỘNG (CHUẨN ANDROID CHROME & IOS SAFARI) -->
+    <div id="pwa-guide-modal" class="hidden fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden border border-slate-100 flex flex-col max-h-[90vh]">
+            <!-- Header Modal -->
+            <div class="bg-gradient-to-r from-bio-700 via-bio-600 to-teal-600 p-4 text-white flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-10 h-10 rounded-xl bg-white p-1 flex items-center justify-center shadow-sm">
+                        <img src="Cụm minh họa học sinh học đáng yêu.png" onerror="this.outerHTML='📲'" alt="BioPlanner" class="w-full h-full object-contain rounded-lg">
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-sm sm:text-base leading-tight">Cài Đặt BioPlanner 2027</h3>
+                        <p id="pwa-guide-detected-device" class="text-[11px] text-bio-100 font-medium mt-0.5">Thêm biểu tượng Chuyên Sinh ra Màn hình chính</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closePwaGuideModal()" class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition text-sm">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
-            <div class="space-y-3 text-xs leading-relaxed text-slate-600">
-                <p class="font-medium text-bio-700">Để mở sổ tay nhanh như ứng dụng gốc khi ôn bài:</p>
-                <ol class="list-decimal list-inside space-y-2 font-medium">
-                    <li>Nhấn vào biểu tượng <b>3 dấu chấm</b> (Chrome Android) hoặc nút <b>Chia sẻ</b> (Safari iOS).</li>
-                    <li>Chọn dòng <b>"Thêm vào màn hình chính"</b> (Add to Home screen).</li>
-                    <li>Xác nhận <b>"Thêm"</b> để hoàn tất!</li>
-                </ol>
+
+            <!-- Tabs chuyển đổi hệ điều hành (Android / iOS) -->
+            <div class="p-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-center gap-2 shrink-0">
+                <button type="button" id="pwa-tab-android" onclick="switchPwaGuideTab('android')" class="flex-1 py-1.5 px-3 rounded-xl text-xs font-extrabold transition flex items-center justify-center gap-1.5 bg-bio-600 text-white shadow-xs">
+                    <i class="fa-brands fa-android text-sm"></i>
+                    <span>Android (Chrome)</span>
+                </button>
+                <button type="button" id="pwa-tab-ios" onclick="switchPwaGuideTab('ios')" class="flex-1 py-1.5 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 text-slate-600 hover:bg-slate-200">
+                    <i class="fa-brands fa-apple text-sm"></i>
+                    <span>iPhone / iPad (Safari)</span>
+                </button>
             </div>
-            <button onclick="closeInstallGuide()" class="w-full py-2.5 bg-bio-600 text-white font-bold text-xs rounded-xl">
-                Đã hiểu
-            </button>
+
+            <!-- Nội dung hướng dẫn -->
+            <div class="p-4 overflow-y-auto space-y-3.5 text-slate-700">
+                <!-- Nội dung cho Android -->
+                <div id="pwa-guide-content-android" class="space-y-3">
+                    <div class="bg-bio-50 p-3 rounded-2xl border border-bio-200 text-xs text-bio-900 font-medium">
+                        💡 <b>Lợi ích:</b> Cài đặt App giúp ẩn hoàn toàn thanh địa chỉ của Chrome, chạy toàn màn hình với biểu tượng Sinh học đáng yêu và mở lịch học mượt mà cả khi không có mạng.
+                    </div>
+
+                    <div class="space-y-2.5">
+                        <div class="flex items-start gap-2.5 p-2.5 bg-slate-50 rounded-2xl border border-slate-200/80">
+                            <span class="w-6 h-6 rounded-lg bg-bio-600 text-white font-black text-xs flex items-center justify-center shrink-0">1</span>
+                            <div class="text-xs">
+                                <p class="font-bold text-slate-800">Bấm vào dấu 3 chấm dọc (⋮)</p>
+                                <p class="text-slate-500 mt-0.5">Nằm ở góc trên cùng bên phải của trình duyệt Google Chrome.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-2.5 p-2.5 bg-slate-50 rounded-2xl border border-slate-200/80">
+                            <span class="w-6 h-6 rounded-lg bg-bio-600 text-white font-black text-xs flex items-center justify-center shrink-0">2</span>
+                            <div class="text-xs">
+                                <p class="font-bold text-slate-800">Chọn "Thêm vào màn hình chính" hoặc "Cài đặt ứng dụng"</p>
+                                <p class="text-slate-500 mt-0.5">Menu trượt xuống → bấm vào dòng có biểu tượng màn hình kèm mũi tên tải xuống.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-2.5 p-2.5 bg-slate-50 rounded-2xl border border-slate-200/80">
+                            <span class="w-6 h-6 rounded-lg bg-bio-600 text-white font-black text-xs flex items-center justify-center shrink-0">3</span>
+                            <div class="text-xs">
+                                <p class="font-bold text-bio-700">Bấm xác nhận "Cài đặt" (Khuyên dùng ⭐)</p>
+                                <p class="text-slate-500 mt-0.5">Hộp thoại hiện lên → chọn "Cài đặt" để biến web thành App Chuyên Sinh trên điện thoại.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nội dung cho iOS / Safari -->
+                <div id="pwa-guide-content-ios" class="hidden space-y-3">
+                    <div class="bg-bio-50 p-3 rounded-2xl border border-bio-200 text-xs text-bio-900 font-medium">
+                        🍎 <b>Dành cho iPhone/iPad:</b> Hãy đảm bảo bạn đang mở trang bằng trình duyệt <b>Safari</b> để cài đặt App ra màn hình chính.
+                    </div>
+
+                    <div class="space-y-2.5">
+                        <div class="flex items-start gap-2.5 p-2.5 bg-slate-50 rounded-2xl border border-slate-200/80">
+                            <span class="w-6 h-6 rounded-lg bg-bio-600 text-white font-black text-xs flex items-center justify-center shrink-0">1</span>
+                            <div class="text-xs">
+                                <p class="font-bold text-slate-800">Bấm nút Chia sẻ (Share) ⎋</p>
+                                <p class="text-slate-500 mt-0.5">Biểu tượng ô vuông có mũi tên chỉ lên ở thanh công cụ dưới đáy màn hình Safari.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-2.5 p-2.5 bg-slate-50 rounded-2xl border border-slate-200/80">
+                            <span class="w-6 h-6 rounded-lg bg-bio-600 text-white font-black text-xs flex items-center justify-center shrink-0">2</span>
+                            <div class="text-xs">
+                                <p class="font-bold text-slate-800">Cuộn xuống chọn "Thêm vào MH chính"</p>
+                                <p class="text-slate-500 mt-0.5">Dòng chữ <b>"Add to Home Screen"</b> có biểu tượng dấu cộng [+].</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-2.5 p-2.5 bg-slate-50 rounded-2xl border border-slate-200/80">
+                            <span class="w-6 h-6 rounded-lg bg-bio-600 text-white font-black text-xs flex items-center justify-center shrink-0">3</span>
+                            <div class="text-xs">
+                                <p class="font-bold text-bio-700">Bấm nút "Thêm" (Add)</p>
+                                <p class="text-slate-500 mt-0.5">Nằm ở góc trên cùng bên phải màn hình để hoàn tất cài đặt.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Modal -->
+            <div class="p-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-2 shrink-0">
+                <button type="button" onclick="closePwaGuideModal()" class="w-full py-2.5 bg-bio-600 hover:bg-bio-700 active:scale-95 text-white font-extrabold text-xs rounded-2xl transition shadow-xs">
+                    Đã hiểu & Đóng
+                </button>
+            </div>
         </div>
     </div>
 
@@ -1156,7 +1324,7 @@
             if ("Notification" in window && Notification.permission === "granted") {
                 new Notification(title, { 
                     body: body, 
-                    icon: "https://cdn-icons-png.flaticon.com/512/295/295282.png" 
+                    icon: "Cụm minh họa học sinh học đáng yêu.png" 
                 });
             }
         }
@@ -1978,39 +2146,122 @@
             }, 2800);
         }
 
-        // PWA - NATIVE INSTALL PROMPT LOGIC
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            // Ngăn chặn Chrome tự động hiển thị prompt
-            e.preventDefault();
-            // Lưu lại event để kích hoạt sau bằng nút "Cài App"
-            deferredPrompt = e;
-        });
+        // ==============================================================================
+        // LOGIC CÀI ĐẶT APP TỰ ĐỘNG PWA (TẢI TRỰC TIẾP TRÊN PC & ANDROID, ẨN KHI ĐÃ CÀI)
+        // ==============================================================================
+        let deferredPrompt = null;
 
-        function openInstallGuide() {
-            if (deferredPrompt) {
-                // Hiển thị prompt cài đặt native của hệ điều hành/trình duyệt
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') {
-                        showToast('Cài đặt BioPlanner thành công!');
-                    }
-                    deferredPrompt = null;
-                });
-            } else {
-                // Nếu trình duyệt (như iOS Safari) không hỗ trợ prompt native, hiện modal hướng dẫn thủ công
-                document.getElementById('install-modal').classList.remove('hidden');
+        // Hàm ẩn toàn bộ banner cài đặt (cả PC và Mobile)
+        function hideAllInstallBanners() {
+            const desk = document.getElementById('pwa-install-banner-desktop');
+            const mob = document.getElementById('pwa-install-banner-mobile');
+            if (desk) {
+                desk.classList.remove('sm:flex');
+                desk.classList.add('hidden');
+            }
+            if (mob) {
+                mob.classList.add('hidden');
             }
         }
 
-        function closeInstallGuide() {
-            document.getElementById('install-modal').classList.add('hidden');
+        // 1. Kiểm tra ngay khi mở: Nếu đang chạy trong App đã cài thì ẩn nút luôn
+        function checkIfAppInstalled() {
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches 
+                              || window.navigator.standalone === true;
+            if (isStandalone || localStorage.getItem('pwa_installed') === 'true') {
+                hideAllInstallBanners();
+            }
         }
 
-        // PWA - SERVICE WORKER (Tạo dạng Blob để thỏa mãn điều kiện chạy trên 1 file HTML duy nhất)
+        window.addEventListener('DOMContentLoaded', checkIfAppInstalled);
+        if (window.matchMedia('(display-mode: standalone)')) {
+            window.matchMedia('(display-mode: standalone)').addEventListener('change', (e) => {
+                if (e.matches) hideAllInstallBanners();
+            });
+        }
+
+        // 2. Bắt sự kiện cho phép tải trực tiếp trên Android & Máy tính
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            localStorage.removeItem('pwa_installed'); // Nếu người dùng đã gỡ app thì cho hiện lại
+        });
+
+        // 3. Khi cài đặt hoàn tất -> Ẩn nút ngay lập tức
+        window.addEventListener('appinstalled', () => {
+            localStorage.setItem('pwa_installed', 'true');
+            deferredPrompt = null;
+            hideAllInstallBanners();
+            showToast('Cài đặt BioPlanner 2027 thành công!');
+        });
+
+        // 4. Hàm xử lý chung khi bấm nút "Cài ngay" trên cả PC và Điện thoại
+        async function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    localStorage.setItem('pwa_installed', 'true');
+                    hideAllInstallBanners();
+                    showToast('Đã cài đặt App BioPlanner thành công!');
+                }
+                deferredPrompt = null;
+            } else {
+                // Nếu mở trên iPhone hoặc trình duyệt chặn cài tự động -> Mở Modal hướng dẫn
+                const modal = document.getElementById('pwa-guide-modal');
+                if (modal) {
+                    modal.classList.remove('hidden');
+                    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+                    switchPwaGuideTab(isIOS ? 'ios' : 'android');
+                }
+            }
+        }
+
+        function openInstallGuide() {
+            installPWA();
+        }
+
+        function closePwaGuideModal() {
+            document.getElementById('pwa-guide-modal')?.classList.add('hidden');
+        }
+
+        function dismissMobileInstallBanner() {
+            document.getElementById('pwa-install-banner-mobile')?.classList.add('hidden');
+        }
+
+        // Chuyển đổi tab Android / iOS trong Popup hướng dẫn
+        function switchPwaGuideTab(os) {
+            const btnAndroid = document.getElementById('pwa-tab-android');
+            const btnIos = document.getElementById('pwa-tab-ios');
+            const contentAndroid = document.getElementById('pwa-guide-content-android');
+            const contentIos = document.getElementById('pwa-guide-content-ios');
+
+            if (os === 'android') {
+                if (btnAndroid) btnAndroid.className = "flex-1 py-1.5 px-3 rounded-xl text-xs font-extrabold transition flex items-center justify-center gap-1.5 bg-bio-600 text-white shadow-xs";
+                if (btnIos) btnIos.className = "flex-1 py-1.5 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 text-slate-600 hover:bg-slate-200";
+                if (contentAndroid) contentAndroid.classList.remove('hidden');
+                if (contentIos) contentIos.classList.add('hidden');
+            } else {
+                if (btnIos) btnIos.className = "flex-1 py-1.5 px-3 rounded-xl text-xs font-extrabold transition flex items-center justify-center gap-1.5 bg-bio-600 text-white shadow-xs";
+                if (btnAndroid) btnAndroid.className = "flex-1 py-1.5 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 text-slate-600 hover:bg-slate-200";
+                if (contentIos) contentIos.classList.remove('hidden');
+                if (contentAndroid) contentAndroid.classList.add('hidden');
+            }
+        }
+
+        // Đăng ký toàn cục
+        window.installPWA = installPWA;
+        window.hideAllInstallBanners = hideAllInstallBanners;
+        window.checkIfAppInstalled = checkIfAppInstalled;
+        window.closePwaGuideModal = closePwaGuideModal;
+        window.dismissMobileInstallBanner = dismissMobileInstallBanner;
+        window.switchPwaGuideTab = switchPwaGuideTab;
+
+        // PWA - SERVICE WORKER (Tạo dạng Blob + Cache Offline để chạy mượt mà trên 1 file HTML)
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 const swCode = `
+                    const CACHE_NAME = 'bioplanner-cache-v1';
                     self.addEventListener('install', (e) => {
                         self.skipWaiting();
                     });
@@ -2018,17 +2269,19 @@
                         e.waitUntil(clients.claim());
                     });
                     self.addEventListener('fetch', (e) => {
-                        // Trả về trực tiếp request (Chỉ cần có listener fetch để đạt chuẩn PWA)
-                        e.respondWith(fetch(e.request).catch(() => new Response('BioPlanner đang ở chế độ Offline.')));
+                        e.respondWith(
+                            fetch(e.request).catch(() => caches.match(e.request))
+                        );
                     });
                 `;
                 const swBlob = new Blob([swCode], { type: 'application/javascript' });
                 const swUrl = URL.createObjectURL(swBlob);
                 
                 navigator.serviceWorker.register(swUrl).then((reg) => {
-                    console.log('PWA Service Worker đã hoạt động!');
+                    console.log('PWA ServiceWorker registered successfully:', reg.scope);
+                    if (reg.update) reg.update();
                 }).catch((err) => {
-                    console.log('PWA Service Worker lỗi: ', err);
+                    console.log('PWA ServiceWorker registration failed:', err);
                 });
             });
         }
